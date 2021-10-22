@@ -1,7 +1,5 @@
 # Baldur's Gate 3 Modding Tools  
 
-A collection is miscellaneous snippets and scripts to make life easier when modding Baldur's Gate 3.
-
 ## Snippets  
 
 Inside the .vscode folder is a file named `BaldursGate3.code-snippets`.  
