@@ -1,0 +1,38 @@
+{
+	"bg3createuuid": {
+		"prefix": "bg3uuid",
+		"description": "Generates a random version 4 UUID",
+		"body": [
+			"${UUID}"
+		]
+	},
+	"bg3createhandle": {
+		"prefix": "bg3handle",
+		"description": "Generates a random localization UUID, used in files such as english.xml, StringKeyFile.lsb, root templates, character creation presets, etc.",
+		"body": [
+			"h${UUID/[-]/g/g}"
+		]
+	},
+	"bg3version1": {
+		"prefix": "bg3version1",
+		"description": "The Int64 value for 1.0.0.0. Good starting point for mods.",
+		"scope": "xml",
+		"body": [
+			"36028797018963968"
+		]
+	},
+	"bg3dependency": {
+		"prefix": "bg3dependency",
+		"description": "Goes under the Dependencies node in a meta.lsx, or can be used for entries under the Mods node in modsettings.lsx.",
+		"scope": "xml",
+		"body": [
+			"<node id=\"ModuleShortDesc\">",
+			"<attribute id=\"Folder\" value=\"${modfolder:ModDirectory}_${moduuid:ModUUID}\" type=\"LSString\" />",
+			"<attribute id=\"MD5\" value=\"\" type=\"LSString\" />",
+			"<attribute id=\"Name\" value=\"${modname:ModName}\" type=\"LSString\" />",
+			"<attribute id=\"UUID\" value=\"${moduuid:ModUUID}\" type=\"FixedString\" />",
+			"<attribute id=\"Version64\" value=\"${modversion:36028797018963968}\" type=\"int64\" />",
+			"</node>",
+		]
+	}
+}
