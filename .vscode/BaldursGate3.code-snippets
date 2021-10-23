@@ -2,6 +2,7 @@
 	"bg3createuuid": {
 		"prefix": "bg3uuid",
 		"description": "Generates a random version 4 UUID",
+		"scope": "xml",
 		"body": [
 			"${UUID}"
 		]
@@ -9,6 +10,7 @@
 	"bg3createhandle": {
 		"prefix": "bg3handle",
 		"description": "Generates a random localization UUID, used in files such as english.xml, StringKeyFile.lsb, root templates, character creation presets, etc.",
+		"scope": "xml,tsv,csv",
 		"body": [
 			"h${UUID/[-]/g/g}"
 		]
@@ -27,11 +29,11 @@
 		"scope": "xml",
 		"body": [
 			"<node id=\"ModuleShortDesc\">",
-			"<attribute id=\"Folder\" value=\"${modfolder:ModDirectory}_${moduuid:ModUUID}\" type=\"LSString\" />",
-			"<attribute id=\"MD5\" value=\"\" type=\"LSString\" />",
-			"<attribute id=\"Name\" value=\"${modname:ModName}\" type=\"LSString\" />",
-			"<attribute id=\"UUID\" value=\"${moduuid:ModUUID}\" type=\"FixedString\" />",
-			"<attribute id=\"Version64\" value=\"${modversion:36028797018963968}\" type=\"int64\" />",
+			"\t<attribute id=\"Folder\" value=\"${1:ModDirectory}_${2:ModUUID}\" type=\"LSString\" />",
+			"\t<attribute id=\"MD5\" value=\"\" type=\"LSString\" />",
+			"\t<attribute id=\"Name\" value=\"${3:ModName}\" type=\"LSString\" />",
+			"\t<attribute id=\"UUID\" value=\"${2:ModUUID}\" type=\"FixedString\" />",
+			"\t<attribute id=\"Version64\" value=\"${4:36028797018963968}\" type=\"int64\" />",
 			"</node>",
 		]
 	}
