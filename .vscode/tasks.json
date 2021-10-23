@@ -1,0 +1,39 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "Create Pak",
+			"type": "shell",
+			"command": "${input:divinepath}",
+			"args": [
+				"-g",
+				"bg3",
+				"-a",
+				"create-package",
+				"-s",
+				"${workspaceFolder}",
+				"-d",
+				"%USERPROFILE%\\Documents\\Larian Studios\\Baldur's Gate 3\\Local Mods\\${workspaceFolderBasename}_${input:moduuid}.pak"
+			],
+			"options": {},
+			"promptOnClose": false,
+			"runOptions": {
+				"reevaluateOnRerun": false,
+				"instanceLimit": 1
+			},
+			"detail": "Creates a pak for a mod root folder, using lslib's CLI interface, divine.exe.",
+			"problemMatcher": []
+		}
+	],
+	"inputs": [{
+			"id": "divinepath",
+			"type": "promptString",
+			"description": "The path to divine.exe (lslib)"
+		},
+		{
+			"id": "moduuid",
+			"type": "promptString",
+			"description": "The mod's UUID."
+		}
+	]
+}
