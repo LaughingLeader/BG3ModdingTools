@@ -32,48 +32,6 @@ if default_divine_path:
     if default_divine_path.is_dir():
         default_divine_path = default_divine_path.joinpath("divine.exe")
 
-## cli args here
-parser = argparse.ArgumentParser()
-parser.add_argument("-i", "--input", type=Path, help="The Baldur's Gate 3 Data directory.", required=True)
-parser.add_argument("-d", "--divine", type=Path, help="The path to divine.exe.")
-parser.add_argument("-o", "--output", type=Path, default=default_extract_path, help="The output directory.")
-parser.add_argument("-g", "--groups", type=str, default="Core", help=f"Groups to include, separated with ;. Groups: {';'.join(sorted(all_groups.keys()))}")
-parser.add_argument("-n", "--ignore", type=str, default="Large", help=f"Groups to ignore, separated with ;. Groups: {';'.join(sorted(all_groups.keys()))}")
-parser.add_argument("-s", "--separate", action='store_true', help="If true, paks will be extracted into separate directories in the output directory, using the pak's name.")
-parser.add_argument("--configure", action='store_true', help="Store -i and -d as environmental variables %%BG3_PATH%% and %%LSLIB_PATH%%.")
-
-parser.description = "Extract BG3 game data paks in order to one folder, or individual folders."
-parser.usage = """
-Extracting core paks with -i and -d properties:
-python extract_game_data.py -g Core -o "C:\Modding\BG3_Extracted" -i "C:\Games\Steam\steamapps\common\Baldurs Gate 3\Data" -d "C:\Modding\BG3\ConverterApp\divine.exe"
-
-Setting environment variables so -i and -d can be omitted:
-===
-python extract_game_data.py --configure -i "C:\Games\Steam\steamapps\common\Baldurs Gate 3" -d "C:\Modding\BG3\ConverterApp"
-===
-This will set the %%BG3_PATH%% and %%LSLIB_PATH%% variables so -i and -d no longer need to be specified.
-
-Extracting core paks (base and patches):
-===
-python extract_game_data.py -g Core -o "C:\Modding\BG3_Extracted"
-===
-
-Extracting everything:
-===
-python extract_game_data.py -g All -o "C:\Modding\BG3_Extracted"
-===
-
-Extracting everything but large paks:
-===
-python extract_game_data.py -g All -n Large -o "C:\Modding\BG3_Extracted"
-===
-
-Extracting multiple groups of paks (while ignoring Large):
-===
-python extract_game_data.py -g Core;Assets;Localization -n Large -o "C:\Modding\BG3_Extracted"
-===
-"""
-
 def default_pak_groups()->List[str]:
     return ["All"]
 @dataclass
@@ -90,7 +48,6 @@ class Pak:
             all_groups[arg] = all_groups[arg] + 1
             self.groups.append(arg)
         return self
-
 class GameData:
     data_paks = [
         Pak("Assets.pak").with_groups("Assets"),
@@ -164,6 +121,55 @@ class GameData:
 all_groups["All"] = len(GameData.data_paks)
 
 async def run():
+    ## cli args here
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-i", "--input", type=Path, help="The Baldur's Gate 3 Data directory.", required=True)
+    parser.add_argument("-d", "--divine", type=Path, help="The path to divine.exe.")
+    parser.add_argument("-o", "--output", type=Path, default=default_extract_path, help="The output directory.")
+    parser.add_argument("-g", "--groups", type=str, default="Core", help=f"Groups to include, separated with ;")
+    parser.add_argument("-n", "--ignore", type=str, default="Large", help=f"Groups to ignore, separated with ;")
+    parser.add_argument("-s", "--separate", action='store_true', help="If true, paks will be extracted into separate directories in the output directory, using the pak's name.")
+    parser.add_argument("--configure", action='store_true', help="Store -i and -d as environmental variables %%BG3_PATH%% and %%LSLIB_PATH%%.")
+
+    parser.description = "Extract BG3 game data paks in order to one folder, or individual folders."
+    new_line = "\n    "
+    parser.usage = f"""
+    Extracting core paks with -i and -d properties:
+    python extract_game_data.py -g Core -o "C:\Modding\BG3_Extracted" -i "C:\Games\Steam\steamapps\common\Baldurs Gate 3\Data" -d "C:\Modding\BG3\ConverterApp\divine.exe"
+
+    Setting environment variables so -i and -d can be omitted:
+    ===
+    python extract_game_data.py --configure -i "C:\Games\Steam\steamapps\common\Baldurs Gate 3" -d "C:\Modding\BG3\ConverterApp"
+    ===
+    This will set the %%BG3_PATH%% and %%LSLIB_PATH%% variables so -i and -d no longer need to be specified.
+
+    Extracting core paks (base and patches):
+    ===
+    python extract_game_data.py -g Core -o "C:\Modding\BG3_Extracted"
+    ===
+
+    Extracting everything:
+    ===
+    python extract_game_data.py -g All -o "C:\Modding\BG3_Extracted"
+    ===
+
+    Extracting everything but large paks:
+    ===
+    python extract_game_data.py -g All -n Large -o "C:\Modding\BG3_Extracted"
+    ===
+
+    Extracting multiple groups of paks (while ignoring Large):
+    ===
+    python extract_game_data.py -g Core;Assets;Localization -n Large -o "C:\Modding\BG3_Extracted"
+    ===
+
+    Pak group settings:
+    ===
+    {new_line.join([f'{x.name}: [{";".join(x.groups)}]' for x in GameData.data_paks])}
+    ===
+    """
+    
+    parser.epilog = f"Groups: {';'.join(sorted(all_groups.keys()))}"
     args = parser.parse_args()
 
     bg3_current = os.environ.get("BG3_PATH", None)
