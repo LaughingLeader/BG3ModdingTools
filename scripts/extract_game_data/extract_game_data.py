@@ -4,12 +4,16 @@ import argparse
 import asyncio
 import datetime
 import os
+from alive_progress import alive_bar
 
 from dataclasses import dataclass, field
 
 PakType = TypeVar("PakType", bound="Pak")
 
 all_groups:Dict[str,int] = {}
+
+def trim(text:str):
+    return "\n".join([s for s in text.splitlines() if s.strip()])
 
 def default_pak_groups():
     return ["All"]
@@ -54,7 +58,7 @@ class GameData:
         Pak("Gustav_Video.pak").with_groups("Assets", "Large"),
         Pak("Patch6_HF1.pak").with_groups("Core", "Patch"),
         Pak("Patch6_HF1Video.pak").with_groups("Assets"),
-        Pak("Localization\English.pak").with_groups("Localization"),
+        Pak("Localization\English.pak").with_groups("Localization", "Core"),
     ]
 
     @staticmethod
@@ -76,12 +80,12 @@ class GameData:
 
         stdout, stderr = await proc.communicate()
 
-        print(f'[divine] exited with {proc.returncode}]')
         encoding = "ISO-8859-1"
         if stdout:
-            print(f'[divine]\n{stdout.decode(encoding)}')
+            log(f'[divine]\n{trim(stdout.decode(encoding))}')
         if stderr:
-            print(f'[divine]\n{stderr.decode(encoding)}')
+            log(f'[divine]\n{trim(stderr.decode(encoding))}')
+        log(f'[divine] exited with code [{proc.returncode}]')
         
         return proc.returncode == 0
 
@@ -114,6 +118,18 @@ if default_divine_path:
 
 default_extract_path = working_dir.joinpath("/GameData_Extracted_{}".format(datetime.datetime.now().timestamp()))
 
+log_path = Path(__file__).parent.parent.joinpath("logs")
+log_path.mkdir(parents=True, exist_ok=True)
+log_path = log_path.joinpath(f"{Path(__file__).stem}").with_suffix(".log")
+
+def log(msg:str):
+    with log_path.open('a+', encoding='utf-8') as f:
+        f.seek(0)
+        data = f.read(100)
+        if len(data) > 0 :
+            f.write("\n")
+        f.write(msg)
+
 async def run():
     parser = argparse.ArgumentParser(description="Extract all BG3 game data paks in order to one folder, or individual folders.")
     parser.add_argument("-i", "--input", default=default_data_path, type=Path, help="The Baldur's Gate 3 Data directory.", required=True)
@@ -145,29 +161,38 @@ async def run():
 
         if not output_dir.exists():
             output_dir.mkdir(parents=True, exist_ok=True)
-        print(f"Extracting game data to {output_dir}")
+        log(f"Extracting game data to {output_dir}")
         successes = 0
         errors = 0
 
         pak_targets = GameData.get_targets(data_dir, target_groups, ignore_groups)
-        if len(pak_targets) == 0:
+        total_paks = len(pak_targets)
+        if total_paks == 0:
             os.error("No paks matched group settings, or no paks were found.")
             return False
 
-        async def process_pak(pak:PakType):
-            nonlocal successes, errors, divine_path, output_dir, args
-            pak_output = Path(output_dir)
-            if args.separate:
-                pak_output = pak_output.joinpath(pak.full_path.stem)
-            if await GameData.extract_pak(pak.full_path, divine_path, pak_output):
-                successes = successes + 1
-            else:
-                errors = errors + 1
+        with alive_bar(total_paks, stats=False) as bar:
+            async def process_pak(pak:PakType):
+                nonlocal successes, errors, divine_path, output_dir, args
+                log(f"Extracting {pak.full_path.name}...")
+                bar.text(f"Extracting {pak.full_path.name}...")
+                pak_output = Path(output_dir)
+                if args.separate:
+                    pak_output = pak_output.joinpath(pak.full_path.stem)
+                if await GameData.extract_pak(pak.full_path, divine_path, pak_output):
+                    successes = successes + 1
+                else:
+                    errors = errors + 1
+                bar()
 
-        tasks = [process_pak(pak) for pak in pak_targets]
-        await asyncio.gather(*tasks)
-        total = successes + errors
-        print(f"Processed {total} paks. Successes({successes}) Errors({errors})")
+            # tasks = [process_pak(pak) for pak in pak_targets]
+            # await asyncio.gather(*tasks)
+            for pak in pak_targets:
+                await process_pak(pak)
+            total = successes + errors
+            msg = f"Processed {total} paks. Successes({successes}) Errors({errors})"
+            bar.text(msg)
+            log(msg)
     else:
         parser.print_help()
     
