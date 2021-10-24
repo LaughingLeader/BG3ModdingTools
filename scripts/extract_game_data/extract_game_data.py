@@ -8,16 +8,36 @@ from alive_progress import alive_bar
 
 from dataclasses import dataclass, field
 
+from .. import common
+
 PakType = TypeVar("PakType", bound="Pak")
 
 all_groups:Dict[str,int] = {}
 
-def trim(text:str):
-    return "\n".join([s for s in text.splitlines() if s.strip()])
+script_name = Path(__file__).stem
+working_dir = Path.cwd()
 
-def default_pak_groups():
+default_data_path = os.environ.get("BG3_PATH", None)
+default_divine_path = os.environ.get("LSLIB_PATH", None)
+default_extract_path = working_dir.joinpath("/GameData_Extracted_{}".format(datetime.datetime.now().timestamp()))
+
+if default_data_path:
+    default_data_path = Path(default_data_path).joinpath("/Data")
+
+if default_divine_path:
+    default_divine_path = Path(default_divine_path).joinpath("divine.exe")
+
+## cli args here
+parser = argparse.ArgumentParser(description="Extract all BG3 game data paks in order to one folder, or individual folders.")
+parser.add_argument("-i", "--input", default=default_data_path, type=Path, help="The Baldur's Gate 3 Data directory.", required=True)
+parser.add_argument("-d", "--divine", default=default_divine_path, type=Path, help="The path to divine.exe.")
+parser.add_argument("-o", "--output", type=Path, default=default_extract_path, help="The output directory.")
+parser.add_argument("-g", "--groups", type=str, default="Core", help=f"Groups to include, separated with ;. Groups: {';'.join(sorted(all_groups.keys()))}")
+parser.add_argument("-n", "--ignore", type=str, default="Large", help=f"Groups to ignore, separated with ;. Groups: {';'.join(sorted(all_groups.keys()))}")
+parser.add_argument("-s", "--separate", action='store_true', help="If true, paks will be extracted into separate directories in the output directory, using the pak's name.")
+
+def default_pak_groups()->List[str]:
     return ["All"]
-
 @dataclass
 class Pak:
     name:str
@@ -62,7 +82,7 @@ class GameData:
     ]
 
     @staticmethod
-    async def extract_pak(f:Path, divine:Path, output:Path):
+    async def extract_pak(f:Path, divine:Path, output:Path)->bool:
         targs = [
             str(divine.absolute()),
             "-g bg3",
@@ -82,10 +102,10 @@ class GameData:
 
         encoding = "ISO-8859-1"
         if stdout:
-            log(f'[divine]\n{trim(stdout.decode(encoding))}')
+            common.log(script_name, f'[divine]\n{common.trim(stdout.decode(encoding))}')
         if stderr:
-            log(f'[divine]\n{trim(stderr.decode(encoding))}')
-        log(f'[divine] exited with code [{proc.returncode}]')
+            common.log(script_name, f'[divine]\n{common.trim(stderr.decode(encoding))}')
+        common.log(script_name, f'[divine] exited with code [{proc.returncode}]')
         
         return proc.returncode == 0
 
@@ -105,39 +125,7 @@ class GameData:
 
 all_groups["All"] = len(GameData.data_paks)
 
-working_dir = Path.cwd()
-
-default_data_path = os.environ.get("BG3_PATH", None)
-default_divine_path = os.environ.get("LSLIB_PATH", None)
-
-if default_data_path:
-    default_data_path = Path(default_data_path).joinpath("/Data")
-
-if default_divine_path:
-    default_divine_path = Path(default_divine_path).joinpath("divine.exe")
-
-default_extract_path = working_dir.joinpath("/GameData_Extracted_{}".format(datetime.datetime.now().timestamp()))
-
-log_path = Path(__file__).parent.parent.joinpath("logs")
-log_path.mkdir(parents=True, exist_ok=True)
-log_path = log_path.joinpath(f"{Path(__file__).stem}").with_suffix(".log")
-
-def log(msg:str):
-    with log_path.open('a+', encoding='utf-8') as f:
-        f.seek(0)
-        data = f.read(100)
-        if len(data) > 0 :
-            f.write("\n")
-        f.write(msg)
-
 async def run():
-    parser = argparse.ArgumentParser(description="Extract all BG3 game data paks in order to one folder, or individual folders.")
-    parser.add_argument("-i", "--input", default=default_data_path, type=Path, help="The Baldur's Gate 3 Data directory.", required=True)
-    parser.add_argument("-d", "--divine", default=default_divine_path, type=Path, help="The path to divine.exe.")
-    parser.add_argument("-o", "--output", type=Path, default=default_extract_path, help="The output directory.")
-    parser.add_argument("-g", "--groups", type=str, default="Core", help=f"Groups to include, separated with ;. Groups: {';'.join(sorted(all_groups.keys()))}")
-    parser.add_argument("-n", "--ignore", type=str, default="Large", help=f"Groups to ignore, separated with ;. Groups: {';'.join(sorted(all_groups.keys()))}")
-    parser.add_argument("-s", "--separate", action='store_true', help="If true, paks will be extracted into separate directories in the output directory, using the pak's name.")
     args = parser.parse_args()
 
     if args.input is not None and args.output is not None and args.divine is not None:
@@ -161,7 +149,7 @@ async def run():
 
         if not output_dir.exists():
             output_dir.mkdir(parents=True, exist_ok=True)
-        log(f"Extracting game data to {output_dir}")
+        common.log(script_name, f"Extracting game data to {output_dir}")
         successes = 0
         errors = 0
 
@@ -174,7 +162,7 @@ async def run():
         with alive_bar(total_paks, stats=False) as bar:
             async def process_pak(pak:PakType):
                 nonlocal successes, errors, divine_path, output_dir, args
-                log(f"Extracting {pak.full_path.name}...")
+                common.log(script_name, f"Extracting {pak.full_path.name}...")
                 bar.text(f"Extracting {pak.full_path.name}...")
                 pak_output = Path(output_dir)
                 if args.separate:
@@ -192,7 +180,7 @@ async def run():
             total = successes + errors
             msg = f"Processed {total} paks. Successes({successes}) Errors({errors})"
             bar.text(msg)
-            log(msg)
+            common.log(script_name, msg)
     else:
         parser.print_help()
     
