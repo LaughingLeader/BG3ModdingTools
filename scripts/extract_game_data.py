@@ -4,11 +4,11 @@ import argparse
 import asyncio
 import datetime
 import os
-from alive_progress import alive_bar
 
 from dataclasses import dataclass, field
+from alive_progress import alive_bar
 
-from .. import common
+import common
 
 PakType = TypeVar("PakType", bound="Pak")
 
@@ -22,19 +22,57 @@ default_divine_path = os.environ.get("LSLIB_PATH", None)
 default_extract_path = working_dir.joinpath("/GameData_Extracted_{}".format(datetime.datetime.now().timestamp()))
 
 if default_data_path:
-    default_data_path = Path(default_data_path).joinpath("/Data")
+    default_data_path = Path(default_data_path)
+    if default_data_path.is_dir():
+        if default_data_path.name != "Data":
+            default_data_path = default_data_path.joinpath("Data")
 
 if default_divine_path:
-    default_divine_path = Path(default_divine_path).joinpath("divine.exe")
+    default_divine_path = Path(default_divine_path)
+    if default_divine_path.is_dir():
+        default_divine_path = default_divine_path.joinpath("divine.exe")
 
 ## cli args here
-parser = argparse.ArgumentParser(description="Extract BG3 game data paks in order to one folder, or individual folders.")
-parser.add_argument("-i", "--input", default=default_data_path, type=Path, help="The Baldur's Gate 3 Data directory.", required=True)
-parser.add_argument("-d", "--divine", default=default_divine_path, type=Path, help="The path to divine.exe.")
+parser = argparse.ArgumentParser()
+parser.add_argument("-i", "--input", type=Path, help="The Baldur's Gate 3 Data directory.", required=True)
+parser.add_argument("-d", "--divine", type=Path, help="The path to divine.exe.")
 parser.add_argument("-o", "--output", type=Path, default=default_extract_path, help="The output directory.")
 parser.add_argument("-g", "--groups", type=str, default="Core", help=f"Groups to include, separated with ;. Groups: {';'.join(sorted(all_groups.keys()))}")
 parser.add_argument("-n", "--ignore", type=str, default="Large", help=f"Groups to ignore, separated with ;. Groups: {';'.join(sorted(all_groups.keys()))}")
 parser.add_argument("-s", "--separate", action='store_true', help="If true, paks will be extracted into separate directories in the output directory, using the pak's name.")
+parser.add_argument("--configure", action='store_true', help="Store -i and -d as environmental variables %%BG3_PATH%% and %%LSLIB_PATH%%.")
+
+parser.description = "Extract BG3 game data paks in order to one folder, or individual folders."
+parser.usage = """
+Extracting core paks with -i and -d properties:
+python extract_game_data.py -g Core -o "C:\Modding\BG3_Extracted" -i "C:\Games\Steam\steamapps\common\Baldurs Gate 3\Data" -d "C:\Modding\BG3\ConverterApp\divine.exe"
+
+Setting environment variables so -i and -d can be omitted:
+===
+python extract_game_data.py --configure -i "C:\Games\Steam\steamapps\common\Baldurs Gate 3" -d "C:\Modding\BG3\ConverterApp"
+===
+This will set the %%BG3_PATH%% and %%LSLIB_PATH%% variables so -i and -d no longer need to be specified.
+
+Extracting core paks (base and patches):
+===
+python extract_game_data.py -g Core -o "C:\Modding\BG3_Extracted"
+===
+
+Extracting everything:
+===
+python extract_game_data.py -g All -o "C:\Modding\BG3_Extracted"
+===
+
+Extracting everything but large paks:
+===
+python extract_game_data.py -g All -n Large -o "C:\Modding\BG3_Extracted"
+===
+
+Extracting multiple groups of paks (while ignoring Large):
+===
+python extract_game_data.py -g Core;Assets;Localization -n Large -o "C:\Modding\BG3_Extracted"
+===
+"""
 
 def default_pak_groups()->List[str]:
     return ["All"]
@@ -127,6 +165,46 @@ all_groups["All"] = len(GameData.data_paks)
 
 async def run():
     args = parser.parse_args()
+
+    bg3_current = os.environ.get("BG3_PATH", None)
+    if bg3_current is not None:
+        bg3_current = Path(bg3_current)
+    lslib_current = os.environ.get("LSLIB_PATH", None)
+    if lslib_current is not None:
+        lslib_current = Path(lslib_current)
+
+    if args.configure:
+        if args.input:
+            if bg3_current is None or args.input.resolve() != bg3_current.resolve():
+                data_dir:Path = args.input
+                if data_dir.name == "Data" or data_dir.is_file():
+                    data_dir = data_dir.parent
+                try:
+                    os.system(f"SETX BG3_PATH {str(data_dir.absolute())}")
+                    common.log(script_name, f"Saved BG3_PATH to:\n{data_dir}", True)
+                except Exception as e:
+                    common.log(script_name, f"Error saving BG3_PATH:\n{e}", True)
+            else:
+                common.log(script_name, f"BG3_PATH already set to {args.input}. Skipping.", True)
+
+        if args.divine:
+            if args.divine.is_file():
+                args.divine = args.divine.parent
+            if lslib_current is None or args.divine.resolve() != lslib_current.resolve():
+                divine_path:Path = args.divine
+                if divine_path.is_file():
+                    divine_path = divine_path.parent
+                try:
+                    os.system(f"SETX LSLIB_PATH {str(divine_path.absolute())}")
+                    common.log(script_name, f"Saved LSLIB_PATH to:\n{divine_path}", True)
+                except Exception as e:
+                    common.log(script_name, f"Error saving LSLIB_PATH:\n{e}", True)
+            else:
+                common.log(script_name, f"LSLIB_PATH already set to {args.divine}. Skipping.", True)
+        return
+    
+    args.input = args.input or default_data_path
+    args.divine = args.divine or default_divine_path 
 
     if args.input is not None and args.output is not None and args.divine is not None:
         data_dir:Path = args.input
