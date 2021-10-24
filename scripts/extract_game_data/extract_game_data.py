@@ -28,7 +28,7 @@ if default_divine_path:
     default_divine_path = Path(default_divine_path).joinpath("divine.exe")
 
 ## cli args here
-parser = argparse.ArgumentParser(description="Extract all BG3 game data paks in order to one folder, or individual folders.")
+parser = argparse.ArgumentParser(description="Extract BG3 game data paks in order to one folder, or individual folders.")
 parser.add_argument("-i", "--input", default=default_data_path, type=Path, help="The Baldur's Gate 3 Data directory.", required=True)
 parser.add_argument("-d", "--divine", default=default_divine_path, type=Path, help="The path to divine.exe.")
 parser.add_argument("-o", "--output", type=Path, default=default_extract_path, help="The output directory.")
