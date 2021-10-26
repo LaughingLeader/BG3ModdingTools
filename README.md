@@ -4,7 +4,7 @@
 
 Either clone this repository, or download it as a zip with the green Code button (click Code -> Download as Zip).
 
-[Refer to the python script installation section for more information.](#Python-Scripts#Installation)
+[Refer to the python script installation section for more information.](#installation-1)
 
 ## Snippets  
 
