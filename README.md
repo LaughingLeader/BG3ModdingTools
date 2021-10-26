@@ -28,7 +28,7 @@ A collection of python scripts are within the scripts folder, allowing various u
 * [Python](https://www.python.org/downloads/) (3.10 or higher)
 * [LSLib](https://github.com/Norbyte/lslib/releases/latest)
 
-After python is installed (or if it was already installed), make sure to install required packages with this command in the command line:
+After python is installed (or if it was already installed), make sure to install required packages with this command in the command line, or double click `InstallScriptRequirements.bat`:
 ```
 pip install -r scripts/requirements.txt
 ```
