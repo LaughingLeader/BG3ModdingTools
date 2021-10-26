@@ -56,7 +56,7 @@ The scripts will check for specific environment variables, which will allow you 
 | ----------- | ----------- |
 | BG3_PATH | The path to the Baldur's Gate 3 root folder, i.e. `C:\Program Files (x86)\Steam\steamapps\common\Baldurs Gate 3` |
 | LSLIB_PATH | The path to wherever you extracted an LSLib release, i.e. `C:\Modding\BG3\Tools\ConverterApp` |
-| BG3_EXTRACTED | The path to all of Baldur's Gate 3 extracted data. This is used for certain scripts like `extract_game_data` for automatic output. |
+| BG3_EXTRACTED | The path to all of Baldur's Gate 3 extracted data. This is used for certain scripts like `extract_game` for automatic output. |
 
 #### How to set Environment Variables  
 
