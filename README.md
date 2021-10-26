@@ -9,8 +9,11 @@ Either clone this repository, or download it as a zip with the green Code button
 ## Snippets  
 
 Inside the .vscode folder is a file named `BaldursGate3.code-snippets`.  
-This is a snippet file for [Visual Studio Code](https://code.visualstudio.com/).  
-You can use it either in a .vscode folder within your workspace, or you can place it in this folder to make it a global snippet for all workspaces:
+This is a snippet file for [Visual Studio Code](https://code.visualstudio.com/), allowing text insertion using keywords (or a shortcut if configured).  
+
+### Installation 
+
+You can use `BaldursGate3.code-snippets` either in a .vscode folder within your project's workspace (you can create this folder), or you can place it in this folder to make it a global snippet for all workspaces:
 ```
 %APPDATA%\Code\User\snippets
 ```
@@ -18,6 +21,15 @@ If you're using [Visual Studio Code Insiders](https://code.visualstudio.com/insi
 ```
 %APPDATA%\Code - Insiders\User\snippets
 ```
+
+### Current Snippets
+
+| Keyword | Description |
+| ----------- | ----------- |
+| bg3uuid |  | Generates a random version 4 UUID |
+| bg3handle | Generates a random localization UUID, used in files such as english.xml, StringKeyFile.lsb, root templates, character creation presets, etc. |
+| bg3version1 | The Int64 value for 1.0.0.0. Good starting point for mods. |
+| bg3dependency | Inserts a ModuleShortDesc node. Goes under the Dependencies node in a meta.lsx, or can be used for entries under the Mods node in modsettings.lsx. |
 
 ## Python Scripts  
 
