@@ -148,32 +148,32 @@ async def run():
     new_line = "\n    "
     parser.usage = f"""
     Extracting core paks with -i and -d properties:
-    python extract_game_data.py -g Core -o "C:\Modding\BG3_Extracted" -i "C:\Games\Steam\steamapps\common\Baldurs Gate 3\Data" -d "C:\Modding\BG3\ConverterApp\divine.exe"
+    python extract_game.py -g Core -o "C:\Modding\BG3_Extracted" -i "C:\Games\Steam\steamapps\common\Baldurs Gate 3\Data" -d "C:\Modding\BG3\ConverterApp\divine.exe"
 
     Setting environment variables so -i and -d can be omitted:
     ===
-    python extract_game_data.py --configure -i "C:\Games\Steam\steamapps\common\Baldurs Gate 3" -d "C:\Modding\BG3\ConverterApp"
+    python extract_game.py --configure -i "C:\Games\Steam\steamapps\common\Baldurs Gate 3" -d "C:\Modding\BG3\ConverterApp"
     ===
     This will set the %%BG3_PATH%% and %%LSLIB_PATH%% variables so -i and -d no longer need to be specified.
 
     Extracting core paks (base and patches):
     ===
-    python extract_game_data.py -g Core -o "C:\Modding\BG3_Extracted"
+    python extract_game.py -g Core -o "C:\Modding\BG3_Extracted"
     ===
 
     Extracting everything:
     ===
-    python extract_game_data.py -g All -o "C:\Modding\BG3_Extracted"
+    python extract_game.py -g All -o "C:\Modding\BG3_Extracted"
     ===
 
     Extracting everything but large paks:
     ===
-    python extract_game_data.py -g All -n Large -o "C:\Modding\BG3_Extracted"
+    python extract_game.py -g All -n Large -o "C:\Modding\BG3_Extracted"
     ===
 
     Extracting multiple groups of paks (while ignoring Large):
     ===
-    python extract_game_data.py -g Core;Assets;Localization -n Large -o "C:\Modding\BG3_Extracted"
+    python extract_game.py -g Core;Assets;Localization -n Large -o "C:\Modding\BG3_Extracted"
     ===
 
     Pak group settings:
