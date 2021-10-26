@@ -9,28 +9,37 @@ from dataclasses import dataclass, field
 from alive_progress import alive_bar
 
 import common
+script_name = Path(__file__).stem
+common.clear_log(script_name)
 
 PakType = TypeVar("PakType", bound="Pak")
 
 all_groups:Dict[str,int] = {}
 
-script_name = Path(__file__).stem
 working_dir = Path.cwd()
 
 default_data_path = os.environ.get("BG3_PATH", None)
 default_divine_path = os.environ.get("LSLIB_PATH", None)
-default_extract_path = working_dir.joinpath("/GameData_Extracted_{}".format(datetime.datetime.now().timestamp()))
+#default_extract_path = working_dir.joinpath("/GameData_Extracted_{}".format(datetime.datetime.now().timestamp()))
+default_extract_path = os.environ.get("BG3_EXTRACTED", None)
 
 if default_data_path:
     default_data_path = Path(default_data_path)
     if default_data_path.is_dir():
         if default_data_path.name != "Data":
             default_data_path = default_data_path.joinpath("Data")
+    else:
+        default_data_path = default_data_path.parent
 
 if default_divine_path:
     default_divine_path = Path(default_divine_path)
     if default_divine_path.is_dir():
         default_divine_path = default_divine_path.joinpath("divine.exe")
+
+if default_extract_path:
+    default_extract_path = Path(default_extract_path)
+    if not default_extract_path.is_dir():
+        default_extract_path = default_extract_path.parent
 
 def default_pak_groups()->List[str]:
     return ["All"]
@@ -50,30 +59,30 @@ class Pak:
         return self
 class GameData:
     data_paks = [
-        Pak("Assets.pak").with_groups("Assets"),
-        Pak("Effects.pak").with_groups("Assets"),
-        Pak("Engine.pak").with_groups("Core"),
-        Pak("EngineShaders.pak").with_groups("Assets"),
-        Pak("Game.pak").with_groups("Core"),
-        Pak("GamePlatform.pak").with_groups("Assets", "Test"),
-        Pak("Icons.pak").with_groups("Assets"),
-        Pak("LowTex.pak").with_groups("Assets", "Textures"),
-        Pak("Materials.pak").with_groups("Assets"),
-        Pak("Minimaps.pak").with_groups("Assets"),
-        Pak("Models.pak").with_groups("Assets", "Large"),
-        Pak("SharedSoundBanks.pak").with_groups("Assets"),
-        Pak("SharedSounds.pak").with_groups("Assets", "Large"),
-        Pak("Textures.pak").with_groups("Assets", "Textures", "Large"),
-        Pak("VirtualTextures.pak").with_groups("Assets", "Textures", "Large"),
-        Pak("Localization\English_Animations.pak").with_groups("Localization", "Assets", "Large"),
-        Pak("Localization\Voice.pak").with_groups("Localization", "Assets", "Large"),
-        Pak("Shared.pak").with_groups("Core"),
-        Pak("Gustav.pak").with_groups("Core"),
-        Pak("Gustav_Textures.pak").with_groups("Assets", "Textures"),
-        Pak("Gustav_Video.pak").with_groups("Assets", "Large"),
-        Pak("Patch6_HF1.pak").with_groups("Core", "Patch"),
-        Pak("Patch6_HF1Video.pak").with_groups("Assets"),
-        Pak("Localization\English.pak").with_groups("Localization", "Core"),
+        Pak("Assets").with_groups("Assets"),
+        Pak("Effects").with_groups("Assets"),
+        Pak("Engine").with_groups("Core"),
+        Pak("EngineShaders").with_groups("Assets"),
+        Pak("Game").with_groups("Core"),
+        Pak("GamePlatform").with_groups("Assets", "Test"),
+        Pak("Icons").with_groups("Assets"),
+        Pak("LowTex").with_groups("Assets", "Textures"),
+        Pak("Materials").with_groups("Assets"),
+        Pak("Minimaps").with_groups("Assets"),
+        Pak("Models").with_groups("Assets", "Large"),
+        Pak("SharedSoundBanks").with_groups("Assets"),
+        Pak("SharedSounds").with_groups("Assets", "Large"),
+        Pak("Textures").with_groups("Assets", "Textures", "Large"),
+        Pak("VirtualTextures").with_groups("Assets", "Textures", "Large"),
+        Pak("Localization\English_Animations").with_groups("Localization", "Assets", "Large"),
+        Pak("Localization\Voice").with_groups("Localization", "Assets", "Large"),
+        Pak("Shared").with_groups("Core"),
+        Pak("Gustav").with_groups("Core"),
+        Pak("Gustav_Textures").with_groups("Assets", "Textures"),
+        Pak("Gustav_Video").with_groups("Assets", "Large"),
+        Pak("Patch6_HF1").with_groups("Core", "Patch"),
+        Pak("Patch6_HF1Video").with_groups("Assets"),
+        Pak("Localization\English").with_groups("Localization", "Core"),
     ]
 
     @staticmethod
@@ -105,16 +114,19 @@ class GameData:
         return proc.returncode == 0
 
     @staticmethod
-    def get_targets(data_dir:Path, target_groups:List[str], ignore_groups:List[str])->List[PakType]:
+    def get_targets(data_dir:Path, target_groups:List[str], ignore_groups:List[str], specific_paks:List[str])->List[PakType]:
         targets = []
 
         for pak in GameData.data_paks:
-            pak.full_path = data_dir.joinpath(pak.name)
-            for g in pak.groups:
-                if g in target_groups and not g in ignore_groups and pak.full_path.exists():
-                    targets.append(pak)
-                    #print(f"Match: {pak.name} | {g} | {pak.groups}")
-                    break
+            pak.full_path = data_dir.joinpath(pak.name).with_suffix(".pak")
+            if pak.name in specific_paks:
+                targets.append(pak)
+            else:
+                for g in pak.groups:
+                    if g in target_groups and not g in ignore_groups and pak.full_path.exists():
+                        targets.append(pak)
+                        #print(f"Match: {pak.name} | {g} | {pak.groups}")
+                        break
         
         return targets
 
@@ -123,13 +135,14 @@ all_groups["All"] = len(GameData.data_paks)
 async def run():
     ## cli args here
     parser = argparse.ArgumentParser()
-    parser.add_argument("-i", "--input", type=Path, help="The Baldur's Gate 3 Data directory.", required=True)
+    parser.add_argument("-i", "--input", type=Path, help="The Baldur's Gate 3 Data directory.")
     parser.add_argument("-d", "--divine", type=Path, help="The path to divine.exe.")
     parser.add_argument("-o", "--output", type=Path, default=default_extract_path, help="The output directory.")
-    parser.add_argument("-g", "--groups", type=str, default="Core", help=f"Groups to include, separated with ;")
-    parser.add_argument("-n", "--ignore", type=str, default="Large", help=f"Groups to ignore, separated with ;")
-    parser.add_argument("-s", "--separate", action='store_true', help="If true, paks will be extracted into separate directories in the output directory, using the pak's name.")
-    parser.add_argument("--configure", action='store_true', help="Store -i and -d as environmental variables %%BG3_PATH%% and %%LSLIB_PATH%%.")
+    parser.add_argument("-s", "--specific", type=str, default="", help=f"Specific pak names to extract, separated with ;")
+    parser.add_argument("-g", "--groups", type=str, default="None", help=f"Groups to include, separated with ;. Defaults to None.")
+    parser.add_argument("-n", "--ignore", type=str, default="Large", help=f"Groups to ignore, separated with ;. Defaults to Large.")
+    parser.add_argument("--separate", action='store_true', help="If true, paks will be extracted into separate directories in the output directory, using the pak's name.")
+    parser.add_argument("--configure", action='store_true', help="Store -i, -d, and -o as environmental variables %%BG3_PATH%%, %%LSLIB_PATH%%, and %%BG3_EXTRACTED%%.")
 
     parser.description = "Extract BG3 game data paks in order to one folder, or individual folders."
     new_line = "\n    "
@@ -172,14 +185,16 @@ async def run():
     parser.epilog = f"Groups: {';'.join(sorted(all_groups.keys()))}"
     args = parser.parse_args()
 
-    bg3_current = os.environ.get("BG3_PATH", None)
-    if bg3_current is not None:
-        bg3_current = Path(bg3_current)
-    lslib_current = os.environ.get("LSLIB_PATH", None)
-    if lslib_current is not None:
-        lslib_current = Path(lslib_current)
-
     if args.configure:
+        bg3_current = os.environ.get("BG3_PATH", None)
+        if bg3_current is not None:
+            bg3_current = Path(bg3_current)
+        lslib_current = os.environ.get("LSLIB_PATH", None)
+        if lslib_current is not None:
+            lslib_current = Path(lslib_current)
+        extracted_current = os.environ.get("BG3_EXTRACTED", None)
+        if extracted_current is not None:
+            extracted_current = Path(extracted_current)
         if args.input:
             if bg3_current is None or args.input.resolve() != bg3_current.resolve():
                 data_dir:Path = args.input
@@ -207,10 +222,23 @@ async def run():
                     common.log(script_name, f"Error saving LSLIB_PATH:\n{e}", True)
             else:
                 common.log(script_name, f"LSLIB_PATH already set to {args.divine}. Skipping.", True)
+
+        if args.output:
+            if args.output.is_file():
+                args.output = args.output.parent
+            if extracted_current is None or args.output.resolve() != extracted_current.resolve():
+                try:
+                    os.system(f"SETX BG3_EXTRACTED {str(args.output.absolute())}")
+                    common.log(script_name, f"Saved BG3_EXTRACTED to:\n{args.output}", True)
+                except Exception as e:
+                    common.log(script_name, f"Error saving BG3_EXTRACTED:\n{e}", True)
+            else:
+                common.log(script_name, f"BG3_EXTRACTED already set to {args.output}. Skipping.", True)
         return
     
     args.input = args.input or default_data_path
-    args.divine = args.divine or default_divine_path 
+    args.divine = args.divine or default_divine_path
+    args.output = args.output or default_extract_path
 
     if args.input is not None and args.output is not None and args.divine is not None:
         data_dir:Path = args.input
@@ -218,10 +246,11 @@ async def run():
         divine_path:Path = args.divine
         target_groups = str.split(args.groups, ";")
         ignore_groups = str.split(args.ignore, ";")
+        specific_paks = str.split(args.specific, ";")
 
-        if len(target_groups) == 0:
+        if len(target_groups) == 0 and len(specific_paks) == 0:
             parser.print_help()
-            os.error("No pak groups specified.")
+            os.error("No pak groups or paks specified.")
             return False
 
         if divine_path.is_dir():
@@ -237,7 +266,7 @@ async def run():
         successes = 0
         errors = 0
 
-        pak_targets = GameData.get_targets(data_dir, target_groups, ignore_groups)
+        pak_targets = GameData.get_targets(data_dir, target_groups, ignore_groups, specific_paks)
         total_paks = len(pak_targets)
         if total_paks == 0:
             os.error("No paks matched group settings, or no paks were found.")
@@ -266,7 +295,7 @@ async def run():
             bar.text(msg)
             common.log(script_name, msg)
     else:
-        parser.print_help()
+        common.log(script_name, f"input({args.input}), output({args.output}), or divine({args.divine}) paths not set.\n Try --help for more info.", True)
     
 def main():
     asyncio.run(run())

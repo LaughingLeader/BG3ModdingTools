@@ -39,6 +39,7 @@ A collection of python scripts are within the scripts folder, allowing various u
 
 * [Python](https://www.python.org/downloads/) (3.10 or higher)
 * [LSLib](https://github.com/Norbyte/lslib/releases/latest)
+* [ImageMagick](https://imagemagick.org/script/download.php) (Required if you want to use `convert_images.py`)
 
 After python is installed (or if it was already installed), make sure to install required packages with this command in the command line, or double click `InstallScriptRequirements.bat`:
 ```
@@ -55,6 +56,7 @@ The scripts will check for specific environment variables, which will allow you 
 | ----------- | ----------- |
 | BG3_PATH | The path to the Baldur's Gate 3 root folder, i.e. `C:\Program Files (x86)\Steam\steamapps\common\Baldurs Gate 3` |
 | LSLIB_PATH | The path to wherever you extracted an LSLib release, i.e. `C:\Modding\BG3\Tools\ConverterApp` |
+| BG3_EXTRACTED | The path to all of Baldur's Gate 3 extracted data. This is used for certain scripts like `extract_game_data` for automatic output. |
 
 #### How to set Environment Variables  
 
