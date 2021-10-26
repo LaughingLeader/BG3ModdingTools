@@ -16,12 +16,20 @@ parser.add_argument("-r", "--recursive", default=False, type=bool, help='If in d
 parser.add_argument("-o", "--outputformat", default=".png", type=str, help='The output format.')
 parser.add_argument("-q", "--quality", default=100, type=int, help='Output quality.')
 parser.add_argument("-s", "--size", default=None, type=int, help='Output square size.')
+parser.add_argument("--alpha", default=None, type=str, help='Force alpha or not (true or false works). See: https://docs.wand-py.org/en/latest/wand/image.html#wand.image.ALPHA_CHANNEL_TYPES for other values.')
 parser.add_argument("--append", default="", type=str, help='Append text to the output filename.')
 parser.add_argument("--srgb", default=False, type=bool, help='Whether to enable SRGB.')
 parser.add_argument("--ddscompression", default=None, type=str, help='If outputformat is ".dds", this is the compression to use. [dxt1, dxt3, dxt5]')
 args = parser.parse_args()
 
 alpha_pattern = re.compile(r"^.*_((\w\wa)|(nm))$", re.IGNORECASE | re.MULTILINE)
+
+if args.alpha:
+    match str.lower(args.alpha):
+        case "true" | "yes" | "1":
+            args.alpha = True
+        case "false" | "no" | "none" | "null" | "undefined" | "0":
+            args.alpha = False
 
 def name_has_alpha(name:str):
     if alpha_pattern.search(name):
@@ -37,6 +45,9 @@ def convert_image(f:Path):
         img.compression_quality = args.quality
         if args.size is not None:
             img.size = (args.size,args.size)
+        if args.alpha is not None:
+            img.alpha_channel = args.alpha
+        
         match args.outputformat:
             case ".jpg" | ".jpeg":
                 img.compression = 'jpeg'
@@ -46,9 +57,10 @@ def convert_image(f:Path):
                     img.alpha_channel = True
                 else:
                     img.compression = args.ddscompression or "dxt1"
-                    img.alpha_channel = args.ddscompression == "dxt5"
+                    if args.alpha is None:
+                        img.alpha_channel = args.ddscompression == "dxt5" # Probably should have alpha
             case _:
-                img.compression = "no"
+                pass
 
         img.save(filename=output_path)
     
