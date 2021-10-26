@@ -26,7 +26,7 @@ If you're using [Visual Studio Code Insiders](https://code.visualstudio.com/insi
 
 | Keyword | Description |
 | ----------- | ----------- |
-| bg3uuid | Generates a random version 4 UUID |
+| bg3uuid | Generates a random version 4 UUID, used all over the place. |
 | bg3handle | Generates a random localization UUID, used in files such as english.xml, StringKeyFile.lsb, root templates, character creation presets, etc. |
 | bg3version1 | The Int64 value for 1.0.0.0. Good starting point for mods. |
 | bg3dependency | Inserts a ModuleShortDesc node. Goes under the Dependencies node in a meta.lsx, or can be used for entries under the Mods node in modsettings.lsx. |
