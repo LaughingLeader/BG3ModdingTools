@@ -74,7 +74,7 @@ def convert_image(f:Path):
         if args.alpha is not None:
             img.alpha_channel = args.alpha
         if args.srgb:
-            img.colorspace = "srgb"
+            img.transform_colorspace("srgb")
         
         match args.outputformat:
             case ".jpg" | ".jpeg":
