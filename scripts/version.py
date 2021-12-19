@@ -45,7 +45,7 @@ class Version():
     def version_int(self)->int64:
         return int64((self.major << 55) + (self.minor << 47) + (self.revision << 31) + self.build)
 
-parser = argparse.ArgumentParser(description='Generate or conversion version numbers to strings and back.')
+parser = argparse.ArgumentParser(description='Generate or convert version numbers to strings and back.')
 parser.add_argument("version", nargs="?", default="1.0.0.0")
 args = parser.parse_args()
 
