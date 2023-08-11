@@ -5,9 +5,11 @@ def trim(text:str)->str:
 
 def clear_log(file_name:str)->bool:
     log_path = Path(__file__).parent.joinpath(f"logs/{file_name}").with_suffix(".log")
-    with log_path.open('w', encoding='utf-8') as f:
-        f.write('')
-        return True
+    try:
+        with log_path.open('w', encoding='utf-8') as f:
+            f.write('')
+            return True
+    except: pass
     return False
 
 def log(file_name:str, msg:str, do_print:bool = False):

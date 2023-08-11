@@ -1,3 +1,4 @@
 alive_progress==2.1.0
 Wand==0.6.7
 pyperclip=1.8.2
+pythonnet=3.0.1
