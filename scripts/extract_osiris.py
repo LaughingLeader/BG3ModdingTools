@@ -52,7 +52,7 @@ if target_file.exists():
         from System import Byte, Array # type: ignore 
         from System.Text import Encoding # type: ignore 
         
-        def parse_debug(result:str):
+        def parse_data(result:str):
             entries = json.loads(result)
             
             types:dict[str,dict[str,str]] = entries["types"]
@@ -110,7 +110,7 @@ if target_file.exists():
             sev.Visit(story)
             result = Encoding.UTF8.GetString(data_stream.ToArray())
             data_stream.Dispose()
-            parse_debug(result)
+            parse_data(result)
             
         if target_file.suffix == ".osi":
             fs = FileStream(str(target_file.absolute()), FileMode.Open, FileAccess.Read, FileShare.Read)
@@ -118,31 +118,31 @@ if target_file.exists():
             fs.Dispose()
             pass
         elif target_file.suffix == ".lsv":
-            packageReader = PackageReader(str(target_file.absolute()))
-            package = packageReader.Read()
-            abstractFileInfo = None
+            package_reader = PackageReader(str(target_file.absolute()))
+            package = package_reader.Read()
+            abstract_file_info = None
             for p in package.Files:
                 if str.lower(p.Name) == "globals.lsf":
-                    abstractFileInfo = p
+                    abstract_file_info = p
                     break
-            if abstractFileInfo is None:
+            if abstract_file_info is None:
                 raise Exception("Failed to find globals.lsf in save file.")
-            rsrcStream = abstractFileInfo.MakeStream()
+            res_stream = abstract_file_info.MakeStream()
             resource = None
             try:
-                rsrcReader = LSFReader(rsrcStream)
-                resource = rsrcReader.Read()
-                rsrcReader.Dispose()
+                res_reader = LSFReader(res_stream)
+                resource = res_reader.Read()
+                res_reader.Dispose()
             finally:
-                abstractFileInfo.ReleaseStream()
+                abstract_file_info.ReleaseStream()
             if resource:
-                storyNode = resource.Regions["Story"].Children["Story"][0]
-                storyStream = MemoryStream(Array[Byte](storyNode.Attributes["Story"].Value))
-                load_story(storyStream)
-                storyStream.Dispose()
+                story_node = resource.Regions["Story"].Children["Story"][0]
+                story_stream = MemoryStream(Array[Byte](story_node.Attributes["Story"].Value))
+                load_story(story_stream)
+                story_stream.Dispose()
         elif target_file.suffix == ".json":
             with target_file.open("r", encoding="utf-8") as f:
-                parse_debug(f.read())
+                parse_data(f.read())
     else:
         raise FileNotFoundError("Failed to find LSLib.dll in the provided divine path.")
 else:
