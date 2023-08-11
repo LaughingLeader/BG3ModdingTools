@@ -56,6 +56,9 @@ class Pak:
 class GameData:
     data_paks = [
         Pak("Assets").with_groups("Assets"),
+        Pak("DiceSet01").with_groups("Assets"),
+        Pak("DiceSet02").with_groups("Assets"),
+        Pak("DiceSet03").with_groups("Assets"),
         Pak("Effects").with_groups("Assets"),
         Pak("Engine").with_groups("Core"),
         Pak("EngineShaders").with_groups("Assets"),
@@ -75,9 +78,11 @@ class GameData:
         Pak("Shared").with_groups("Core"),
         Pak("Gustav").with_groups("Core"),
         Pak("Gustav_Textures").with_groups("Assets", "Textures"),
+        Pak("Gustav_NavCloud").with_groups("Assets"),
         Pak("Gustav_Video").with_groups("Assets", "Large"),
-        Pak("Patch6_HF1").with_groups("Core", "Patch"),
-        Pak("Patch6_HF1Video").with_groups("Assets"),
+        Pak("day0").with_groups("Core", "Patch"),
+        Pak("Patch0_Hotfix1").with_groups("Core", "Patch"),
+        Pak("Patch0_Hotfix2").with_groups("Core", "Patch"),
         Pak("Localization\English").with_groups("Localization", "Core"),
     ]
 
