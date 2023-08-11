@@ -1,5 +1,4 @@
 from pathlib import Path
-from typing import List, Dict, TypeVar 
 import argparse
 import asyncio
 import os
@@ -11,9 +10,7 @@ import common
 script_name = Path(__file__).stem
 common.clear_log(script_name)
 
-PakType = TypeVar("PakType", bound="Pak")
-
-all_groups:Dict[str,int] = {}
+all_groups:dict[str,int] = {}
 
 working_dir = Path.cwd()
 
@@ -40,15 +37,15 @@ if default_extract_path:
     if not default_extract_path.is_dir():
         default_extract_path = default_extract_path.parent
 
-def default_pak_groups()->List[str]:
+def default_pak_groups()->list[str]:
     return ["All"]
 @dataclass
 class Pak:
     name:str
-    full_path:Path = None
-    groups:List[str] = field(default_factory=default_pak_groups)
+    full_path:Path = field(default_factory=lambda:Path())
+    groups:list[str] = field(default_factory=default_pak_groups)
 
-    def with_groups(self, *args:List[str])->PakType:
+    def with_groups(self, *args:str):
         global all_groups
         for arg in args:
             if not all_groups.get(arg):
@@ -113,7 +110,7 @@ class GameData:
         return proc.returncode == 0
 
     @staticmethod
-    def get_targets(data_dir:Path, target_groups:List[str], ignore_groups:List[str], specific_paks:List[str])->List[PakType]:
+    def get_targets(data_dir:Path, target_groups:list[str], ignore_groups:list[str], specific_paks:list[str])->list[Pak]:
         targets = []
 
         for pak in GameData.data_paks:
@@ -134,8 +131,8 @@ all_groups["All"] = len(GameData.data_paks)
 async def run():
     ## cli args here
     parser = argparse.ArgumentParser()
-    parser.add_argument("-i", "--input", type=Path, help="The Baldur's Gate 3 Data directory.")
-    parser.add_argument("-d", "--divine", type=Path, help="The path to divine.exe.")
+    parser.add_argument("-i", "--input", type=Path, default=default_data_path, help="The Baldur's Gate 3 Data directory.")
+    parser.add_argument("-d", "--divine", type=Path, default=default_divine_path, help="The path to divine.exe.")
     parser.add_argument("-o", "--output", type=Path, default=default_extract_path, help="The output directory.")
     parser.add_argument("-s", "--specific", type=str, default="", help=f"Specific pak names to extract, separated with ;")
     parser.add_argument("-g", "--groups", type=str, default="None", help=f"Groups to include, separated with ;. Defaults to None.")
@@ -234,10 +231,6 @@ async def run():
             else:
                 common.log(script_name, f"BG3_EXTRACTED already set to {args.output}. Skipping.", True)
         return
-    
-    args.input = args.input or default_data_path
-    args.divine = args.divine or default_divine_path
-    args.output = args.output or default_extract_path
 
     if args.input is not None and args.output is not None and args.divine is not None:
         data_dir:Path = args.input
@@ -272,7 +265,7 @@ async def run():
             return False
 
         with alive_bar(total_paks, stats=False) as bar:
-            async def process_pak(pak:PakType):
+            async def process_pak(pak:Pak):
                 nonlocal successes, errors, divine_path, output_dir, args
                 common.log(script_name, f"Extracting {pak.full_path.name}...")
                 bar.text(f"Extracting {pak.full_path.name}...")

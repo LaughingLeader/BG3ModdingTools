@@ -45,24 +45,25 @@ class Version():
     def version_int(self)->int64:
         return int64((self.major << 55) + (self.minor << 47) + (self.revision << 31) + self.build)
 
-parser = argparse.ArgumentParser(description='Generate or convert version numbers to strings and back.')
-parser.add_argument("version", nargs="?", default="1.0.0.0")
-args = parser.parse_args()
+if __name__ == "main":
+    parser = argparse.ArgumentParser(description='Generate or convert version numbers to strings and back.')
+    parser.add_argument("version", nargs="?", default="1.0.0.0")
+    args = parser.parse_args()
 
-version = Version()
+    version = Version()
 
-if "." in args.version:
-    if version.parse_string(args.version):
-        version_int = str(version.version_int)
-        print(f"Copied {version_int} to the clipboard.")
-        pyperclip.copy(version_int)
+    if "." in args.version:
+        if version.parse_string(args.version):
+            version_int = str(version.version_int)
+            print(f"Copied {version_int} to the clipboard.")
+            pyperclip.copy(version_int)
+        else:
+            print(f"Failed to parse {args.version}")
     else:
-        print(f"Failed to parse {args.version}")
-else:
-    if version.parse_integer(int64(args.version)):
-        print(f"Copied {version.version_str} to the clipboard.")
-        pyperclip.copy(version.version_str)
-    else:
-        print(f"Failed to parse {args.version}")
-    
-print(f"{version.version_str} = {version.version_int}")
+        if version.parse_integer(int64(args.version)):
+            print(f"Copied {version.version_str} to the clipboard.")
+            pyperclip.copy(version.version_str)
+        else:
+            print(f"Failed to parse {args.version}")
+        
+    print(f"{version.version_str} = {version.version_int}")
