@@ -11,7 +11,6 @@ script_dir = Path(os.path.dirname(os.path.abspath(__file__)))
 os.chdir(script_dir)
 
 default_output_path = Path(script_dir.joinpath("output\\osiris\\"))
-
 default_divine_path = Path(os.environ.get("LSLIB_PATH", None))
 
 ## cli args here
@@ -64,6 +63,12 @@ if target_file.exists():
             type_dict = dict(sorted(type_dict.items()))
             output_dir.joinpath("Types.tsv").write_text("\n".join([f"{k}\t{v}" for k,v in type_dict.items()]))
             
+            def get_query_param(name, index, typeId, bitmask):
+                is_out = bitmask >> ((index&~7) +(8 - (index&7))) != 0
+                if is_out:
+                    return f"[out]{type_dict.get(typeId)}"
+                return type_dict.get(typeId)
+            
             events = []
             calls = []
             queries = []
@@ -84,9 +89,14 @@ if target_file.exists():
                     case "Call":
                         calls.append(f"{name}({params})")
                     case "Query":
-                        out_param = type_dict.get(data["signature"]["out"])
-                        if out_param:
-                            queries.append(f"{name}({params}):{out_param}")
+                        out_param_bitmask = data["signature"]["out"]
+                        if out_param_bitmask and raw_params is not None:
+                            out_param_bitmask = int(out_param_bitmask)
+                            parsed_params = []
+                            for i in range(len(raw_params)):
+                                parsed_params.append(get_query_param(name, i+1, raw_params[i], out_param_bitmask))
+                            params = ', '.join(parsed_params)
+                            queries.append(f"{name}({params})")
                         else:
                             queries.append(f"{name}({params})")
                     case "UserQuery":
