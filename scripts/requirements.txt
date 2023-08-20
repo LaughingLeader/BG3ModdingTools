@@ -1,4 +1,9 @@
-alive_progress==2.1.0
+alive_progress==2.4.0
+clr==1.0.3
+lxml==4.6.3
+numpy==1.22.3
+Pillow==10.0.0
+pyperclip==1.8.2
+pythonnet==3.0.1
+Send2Trash==1.8.0
 Wand==0.6.7
-pyperclip=1.8.2
-pythonnet=3.0.1
