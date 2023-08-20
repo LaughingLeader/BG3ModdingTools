@@ -22,3 +22,13 @@ def log(file_name:str, msg:str, do_print:bool = False):
         if len(data) > 0 :
             f.write("\n")
         f.write(msg)
+        
+def import_lslib(dll_path:Path)->bool:
+    try:
+        import clr
+        from System.Reflection import Assembly # type: ignore 
+        Assembly.LoadFrom(str(dll_path.absolute()))
+        clr.AddReference("LSLib") # type: ignore 
+        return True
+    except:
+        return False
