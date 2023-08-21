@@ -35,7 +35,7 @@ parser.description = "Extract effect data from a path."
 new_line = "\n    "
 parser.usage = f"""
 Example usage:
-python extract_osiris.py -d "C:\lslib\divine.exe" -o "C:\Modding\BG3\OsirisInfo" -f "%LOCALAPPDATA%\Larian Studios\Baldur's Gate 3\PlayerProfiles\Public\Savegames\Story\Tav-24112318724__Quicksave1\Quicksave1.lsv"
+python extract_effects.py -d "C:\lslib\divine.exe" -f "G:/Modding/BG3/_Extracted/Public/Shared/Content/Assets/Effects"
 """
 
 args = parser.parse_args()
