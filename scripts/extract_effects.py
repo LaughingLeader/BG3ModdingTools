@@ -23,11 +23,9 @@ class Effect:
         return f"{self.name}\t{self.uuid}\t{self.filepath}"
 
 default_output_path = Path(script_dir.joinpath("output\\effects\\"))
-default_divine_path = Path(os.environ.get("LSLIB_PATH", None))
 
 ## cli args here
 parser = argparse.ArgumentParser()
-parser.add_argument("-d", "--divine", type=Path, default=default_divine_path, help="The path to divine.exe.")
 parser.add_argument("-o", "--output", type=Path, default=default_output_path, help="The output directory.")
 parser.add_argument("-e", "--effects", type=Path, default=Path("G:/Modding/BG3/_Extracted/Public/Shared/Content/Assets/Effects"), help="The effects directory.")
 
@@ -35,12 +33,11 @@ parser.description = "Extract effect data from a path."
 new_line = "\n    "
 parser.usage = f"""
 Example usage:
-python extract_effects.py -d "C:\lslib\divine.exe" -f "G:/Modding/BG3/_Extracted/Public/Shared/Content/Assets/Effects"
+python extract_effects.py -f "G:/Modding/BG3/_Extracted/Public/Shared/Content/Assets/Effects"
 """
 
 args = parser.parse_args()
 
-lslib_dll:Path = args.divine.is_dir() and args.divine.joinpath("LSLib.dll") or args.divine.parent.joinpath("LSLib.dll")
 output_dir:Path = args.output
 output_dir.mkdir(exist_ok=True, parents=True)
 data_dir:Path = args.effects
