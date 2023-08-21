@@ -45,8 +45,8 @@ data_dir:Path = args.effects
 effects:dict[str,Effect] = {}
 
 for f_path in data_dir.rglob("*.lsx"):
-    with f_path.open("r", encoding="utf-8") as f:
-        meta_xml:ET._Element = ET.XML(f.read(), None)
+    with f_path.open("rb") as f:
+        meta_xml:ET._Element = ET.parse(f)
         #for node in meta_xml.iterfind("./region/node/children/node[@id='Resource']/attribute", None):
         for node in meta_xml.iterfind("./region/node/children/node[@id='Resource']", None):
             name = ""
