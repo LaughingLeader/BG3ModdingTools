@@ -1,12 +1,13 @@
-from PIL import Image
 import os
 import subprocess
-import pathlib
+from dataclasses import dataclass
 from pathlib import Path
-import numpy
 import argparse
 import timeit
-from dataclasses import dataclass
+
+# External
+from PIL import Image
+import numpy
 import send2trash
 
 import common
@@ -84,7 +85,7 @@ class Icon():
                 )
 
 def get_images(directory):
-    dir_path = pathlib.Path(directory)
+    dir_path = Path(directory)
     files = dir_path.glob("*.png")
     return list(files)
 
