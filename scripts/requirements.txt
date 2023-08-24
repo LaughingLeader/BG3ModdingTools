@@ -1,5 +1,4 @@
 alive_progress==2.4.0
-clr==1.0.3
 lxml==4.6.3
 numpy==1.22.3
 Pillow==10.0.0
