@@ -99,47 +99,68 @@ def truncate(number, digits, round_num = True) -> float:
 script_dir = Path(os.path.dirname(os.path.abspath(__file__)))
 os.chdir(script_dir)
 
-parser = argparse.ArgumentParser(description='Create a texture atlas from a folder of icons.')
-parser.add_argument("-i", "--icons", type=Path, required=True, help='The directory of icons to process.')
-parser.add_argument("-a", "--atlas", type=Path, required=True, help='The path of the atlas file to create, such as Public/ModName_UUID/GUI/MyAtlas.lsx.')
-parser.add_argument("-t", "--texture", type=Path, required=True, help='The path of the texture to create.')
-parser.add_argument("-u", "--uuid", type=str, default="", help='The UUID to use for the atlas (defaults to a new UUID4).')
-parser.add_argument("-m", "--mipmaps", action='store_true', help='Generate mipmaps (default False).')
-parser.add_argument("-f", "--ddsformat", type=str, default="DXT5", help='The dds format to use (DXT1, DXT5 etc). Defaults to DXT5 (BC3_UNORM).')
-parser.add_argument("--ddstool", type=Path, help='The path to the "DirectXTex texture processing library" (directory where texconv is).')
-parser.add_argument("--iconsize", type=int, default=(64,64), nargs="+", help='The icon width/height/.')
-parser.add_argument("--texturesize", type=int, default=(2048,2048), nargs="+", help='The texture width/height/.')
-parser.usage = f"""
-Example usage:
-python create_atlas.py -i "G:/Modding/BG3/Mods/MyMod/Icons" -a "C:/BG3/Data/Public/MyModFolder/GUI/MyMod_Icons.lsx" -u 6bae909c-1736-48e7-ae19-314b3aa7b1f5 -t "C:/BG3/Data/Public/MyModFolder/Assets/Textures/Icons/MyMod_Icons.dds" --ddstool "C:/Portable/DirectXTex" --texturesize 1024 1024
-"""
+default_divine_path = Path(os.environ.get("LSLIB_PATH", None))
 
 totalIcons = 0
 
-def run():
-    args = parser.parse_args()
-    images_dir:Path = args.icons
-    atlas_output:Path = args.atlas
-    texture_output:Path = args.texture
-    atlas_uuid:str = args.uuid
-    dds_format:str = args.ddsformat
-    icon_size:tuple[int,int] = args.iconsize
-    texture_size:tuple[int,int] = args.texturesize
+texture_resource_template = """<?xml version="1.0" encoding="utf-8"?>
+<save>
+	<version major="4" minor="0" revision="9" build="0" />
+	<region id="TextureBank">
+		<node id="TextureBank">
+			<children>
+				<node id="Resource">
+					<attribute id="ID" type="FixedString" value="{uuid}" />
+					<attribute id="Localized" type="bool" value="False" />
+					<attribute id="Name" type="LSString" value="{name}" />
+					<attribute id="SRGB" type="bool" value="True" />
+					<attribute id="SourceFile" type="LSString" value="{dds}" />
+					<attribute id="Streaming" type="bool" value="True" />
+					<attribute id="Template" type="FixedString" value="{name}" />
+					<attribute id="Type" type="int32" value="0" />
+				</node>
+            </children>
+		</node>
+	</region>
+</save>"""
+
+def generate_texture_lsf(uuid:str, dds_path:Path, resource_path:Path, lslib_path:Path):
+    if not common.import_lslib(lslib_path):
+        print(f"Path to lslib is invalid: {lslib_path}")
+        return False
+    resource_path.parent.mkdir(exist_ok=True, parents=True)
+    dds_path_str = str(dds_path)
+    public_index = dds_path_str.index("Public")
+    local_dds_path = dds_path_str[public_index]
+    texture_lsx = texture_resource_template.format(uuid=uuid, name=dds_path.name, dds=local_dds_path)
     
-    if atlas_uuid is None or atlas_uuid == "":
-        atlas_uuid = common.NewUUID()
-    do_mipmaps:bool = args.mipmaps
+    from LSLib.LS import ResourceUtils, ResourceConversionParameters # type: ignore 
+    from LSLib.LS.Enums import Game, ResourceFormat # type: ignore 
+    from System.IO import StreamWriter, MemoryStream # type: ignore 
+    
+    stream:MemoryStream = None
+    writer:StreamWriter = None
+    try:
+        stream = MemoryStream()
+        writer = StreamWriter(stream)
+        writer.Write(texture_lsx)
+        writer.Flush()
+        stream.Position = 0
+        
+        resource = ResourceUtils.LoadResource(stream, ResourceFormat.LSX)
+        conversionParams = ResourceConversionParameters.FromGameVersion(Game.BaldursGate3)
+        ResourceUtils.SaveResource(resource, str(resource_path.absolute()), ResourceFormat.LSF, conversionParams)
+        print(f"Created {resource_path}")
+        return True
+    finally:
+        if stream != None:
+            stream.Dispose()
+        if writer != None:
+            writer.Dispose()
+    return False
 
-    atlas_output = atlas_output.with_suffix(".lsx")
-    texture_output = texture_output.with_suffix(".dds")
-    temp_texture_png = texture_output.with_suffix(".png")
-    root_data_dir = atlas_output.parent.parent.parent
-
-    images = get_images(images_dir)
-    common.log(script_name, f"Merging {len(images)} images.")
-
+def get_icons(icons_dir:Path, icon_size:tuple[int,int], texture_size:tuple[int,int])->list[Icon]:
     icons = []
-
     padding = (float(0.5/texture_size[0]), float(0.5/texture_size[1]))
     col_max = texture_size[0] / icon_size[0]
     row_max = texture_size[1] / icon_size[1]
@@ -149,6 +170,7 @@ def run():
 
     # For some reason, the editor appends the first two icons to the end
     icons_first = []
+    images = get_images(icons_dir)
     for img in images:
         # u1 = truncate(float(((icon_size * x) / texture_size) + padding), 9)
         # v1 = truncate(float(((icon_size * y) / texture_size) + padding), 9)
@@ -187,8 +209,42 @@ def run():
             break
 
     icons.extend(icons_first)
-    global totalIcons
-    totalIcons = len(icons)
+    return icons
+
+def generate_texture(icons:list[Icon], texture_output:Path, texture_size:tuple[int,int], dds_format:str = "DXT5", do_mipmaps:bool=False):
+    temp_texture_png = texture_output.with_suffix(".png")
+    texture_image = Image.new('RGBA', texture_size, (0, 0, 0, 0))
+    common.log(script_name, f"Merging {len(icons)} images.")
+    for icon in icons:
+        common.log(script_name, f"** Pasting '{icon.name}'.", False)
+        #texture_image.paste(icon.image, icon.pos, mask=0)
+        texture_image.alpha_composite(icon.image, icon.pos)
+
+    common.log(script_name, f"Saving temp png texture to '{temp_texture_png}'.")
+    texture_image.save(temp_texture_png)
+    common.log(script_name, f"Converting texture to dds at '{texture_output}'.")
+
+    command = f"texconv -m {0 if do_mipmaps else 1} -ft dds -f {dds_format} -nologo -timing -y -o \"{texture_output.parent}\" \"{temp_texture_png.absolute()}\""
+    common.log(script_name, f"Running command '{command}'.")
+    p = subprocess.run(command,
+        shell=True,
+        universal_newlines=True,
+        stdout=subprocess.PIPE, 
+        stderr=subprocess.PIPE)
+    #common.log(script_name, f"{p.args}")
+    common.log(script_name, p.stdout)
+    common.log(script_name, p.stderr)
+    if p.returncode == 0:
+        send2trash.send2trash(str(temp_texture_png.absolute()).replace("/", "\\"))
+        return True
+
+def generate_atlas_lsx(icons:list[Icon], atlas_output:Path, texture_output:Path, atlas_uuid:str, icon_size:tuple[int,int], texture_size:tuple[int,int])->bool:
+    if atlas_uuid is None or atlas_uuid == "":
+        atlas_uuid = common.NewUUID()
+
+    atlas_output = atlas_output.with_suffix(".lsx")
+    texture_output = texture_output.with_suffix(".dds")
+    root_data_dir = atlas_output.parent.parent.parent
 
     def create_atlas_output(icons_str, icon_w, icon_h, 
             texture_path, uuid, texture_width, texture_height):
@@ -205,6 +261,9 @@ def run():
     icons_str = ""
     for icon in icons:
         icons_str += icon.to_xml()
+    
+    atlas_output.parent.mkdir(exist_ok=True, parents=True)
+    texture_output.parent.mkdir(exist_ok=True, parents=True)
 
     xml_str = create_atlas_output(icons_str, icon_size[0], icon_size[1], 
         texture_output.relative_to(root_data_dir), atlas_uuid, texture_size[0], texture_size[1])
@@ -214,28 +273,42 @@ def run():
     f = open(atlas_output, "w")
     f.write(xml_str)
 
-    texture_image = Image.new('RGBA', texture_size, (0, 0, 0, 0))
-
-    for icon in icons:
-        common.log(script_name, f"** Pasting '{icon.name}'.", False)
-        #texture_image.paste(icon.image, icon.pos, mask=0)
-        texture_image.alpha_composite(icon.image, icon.pos)
-
-    common.log(script_name, f"Saving temp png texture to '{temp_texture_png}'.")
-    texture_image.save(temp_texture_png)
-    common.log(script_name, f"Converting texture to dds at '{texture_output}'.")
-
-    command = f"texconv -m {0 if do_mipmaps == True else 1} -ft dds -f {dds_format} -nologo -timing -y -o \"{texture_output.parent}\" \"{temp_texture_png.absolute()}\""
-    common.log(script_name, f"Running command '{command}'.")
-    p = subprocess.run(command,
-        shell=True,
-        universal_newlines=True,
-        stdout=subprocess.PIPE, 
-        stderr=subprocess.PIPE)
-    #common.log(script_name, f"{p.args}")
-    common.log(script_name, p.stdout)
-    common.log(script_name, p.stderr)
-    if p.returncode == 0:
-        send2trash.send2trash(str(temp_texture_png.absolute()).replace("/", "\\"))
-        return True
-print("Created atlas in {} seconds for {} icons.".format(timeit.timeit(run, number=1), totalIcons))
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description='Create a texture atlas from a folder of icons.')
+    parser.add_argument("-i", "--icons", type=Path, required=True, help='The directory of icons to process.')
+    parser.add_argument("-a", "--atlas", type=Path, required=True, help='The path of the atlas file to create, such as Public/ModName_UUID/GUI/MyAtlas.lsx.')
+    parser.add_argument("-t", "--texture", type=Path, required=True, help='The path of the texture to create.')
+    parser.add_argument("-u", "--uuid", type=str, default="", help='The UUID to use for the atlas (defaults to a new UUID4).')
+    parser.add_argument("-m", "--mipmaps", action='store_true', help='Generate mipmaps (default False).')
+    parser.add_argument("-f", "--ddsformat", type=str, default="DXT5", help='The dds format to use (DXT1, DXT5 etc). Defaults to DXT5 (BC3_UNORM).')
+    parser.add_argument("-r", "--resource", type=Path, help='The path to content texture resource lsf to generate (optional). This requires --divine to be set, or a LSLIB_PATH environment variable to be set.')
+    parser.add_argument("--ddstool", type=Path, help='The path to the "DirectXTex texture processing library" (directory where texconv is).')
+    parser.add_argument("--iconsize", type=int, default=(64,64), nargs="+", help='The icon width/height/.')
+    parser.add_argument("--texturesize", type=int, default=(2048,2048), nargs="+", help='The texture width/height/.')
+    parser.add_argument("--divine", type=Path, default=default_divine_path, help="The path to divine.exe.")
+    parser.usage = f"""
+    Example usage:
+    python create_atlas.py -i "G:/Modding/BG3/Mods/MyMod/Icons" -a "C:/BG3/Data/Public/MyModFolder/GUI/MyMod_Icons.lsx" -u 6bae909c-1736-48e7-ae19-314b3aa7b1f5 -t "C:/BG3/Data/Public/MyModFolder/Assets/Textures/Icons/MyMod_Icons.dds" --ddstool "C:/Portable/DirectXTex" --texturesize 1024 1024
+    """
+    def run_cmd():
+        args = parser.parse_args()
+        lslib_dll:Path = args.divine.is_dir() and args.divine.joinpath("LSLib.dll") or args.divine.parent.joinpath("LSLib.dll")
+        icons_dir:Path = args.icons
+        atlas_output:Path = args.atlas
+        texture_output:Path = args.texture
+        resource_output:Path = args.resource
+        atlas_uuid:str = args.uuid
+        dds_format:str = args.ddsformat
+        icon_size:tuple[int,int] = args.iconsize
+        texture_size:tuple[int,int] = args.texturesize
+        do_mipmaps:bool = args.mipmaps
+        icons = get_icons(icons_dir, icon_size, texture_size)
+        global totalIcons
+        totalIcons = len(icons)
+        if totalIcons > 0:
+            generate_atlas_lsx(icons, atlas_output, texture_output, atlas_uuid, icon_size, texture_size)
+            generate_texture(icons, texture_output, texture_size, dds_format, do_mipmaps)
+        if resource_output:
+            generate_texture_lsf(atlas_uuid, texture_output, resource_output, lslib_dll)
+        
+    print("Created atlas in {} seconds for {} icons.".format(timeit.timeit(run_cmd, number=1), totalIcons))
