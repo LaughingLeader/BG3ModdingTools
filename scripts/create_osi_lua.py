@@ -47,8 +47,6 @@ func_template_nodesc = """
 {params_doc}
 function Osi.{name}({params_func}) end"""
 
-enum_alias_value_template = "---| '{value}' [# {description}]"
-
 enum_alias_template = """
 ---@alias {name}
 {entries}
@@ -77,7 +75,7 @@ class EnumValue:
     value:int
     
     def to_lua(self):
-        return f"---| '{self.name}' # {self.value}"
+        return f"---| \"{self.name}\" # {self.value}"
 
 @dataclass
 class OsirisType:
@@ -249,8 +247,6 @@ def build_call(line):
 
         call = CallDefinition(func_name)
         for match in params_match:
-            #print("Match: {}".format(match))
-            #print("**{}".format(dir(match)))
             param_type = get_param_type(match.group(1))
             param_name = match.group(2)
 
@@ -260,7 +256,6 @@ def build_call(line):
             
             p = FuncVariable(param_name, param_type)
             call.parameters.append(p)
-        #print("New call: " + call.to_string())
         if "NRD" in func_name:
             extender_definitions.append(call)
         else:
@@ -383,7 +378,6 @@ def run(header_file:Path, output_path:Path, osi_file:Path, lslib_dll:Path):
             for call in story.procs:
                 existing = function_map.get(call.name, None)
                 if existing and len(call.params) < len(existing.parameters):
-                    print("Found overloads for", existing.name)
                     params = []
                     for i in range(len(call.params)):
                         type_str = call.params[i]
@@ -391,28 +385,33 @@ def run(header_file:Path, output_path:Path, osi_file:Path, lslib_dll:Path):
                         params.append(FuncVariable(f"a{i}", t.id))
                         
                     existing.overloads.append(CallDefinition(existing.name, params))
+    else:
+        print(f"--osi {osi_file} or --divine {lslib_dll} do not exist - skipping.")
             
     export(output_path)
+    print("Done!")
+    print(output_path)
 
 if __name__ == "__main__":
     default_output_path = Path(script_dir.joinpath("output/lua/Osi.lua"))
     default_divine_path = Path(os.environ.get("LSLIB_PATH", None))
 
     parser = argparse.ArgumentParser()
-    parser.add_argument("-h", "--header", type=Path, required=True, help="The path to a story_header.div file.")
+    parser.add_argument("--header", type=Path, required=True, help="The path to a story_header.div file.")
     parser.add_argument("-o", "--output", type=Path, default=default_output_path, help="The output file. Defaults to output/lua/Osi.lua")
-    parser.add_argument("-d", "--divine", type=Path, default=default_divine_path, help="The path to divine.exe. Only used if a story.div.osi is included.")
-    parser.add_argument("-f", "--file", type=Path, help="The path to a save file or story.div.osi to extract Osiris data from. This is only used to generate function overloads for calls that also have procs defined.")
+    parser.add_argument("--divine", type=Path, default=default_divine_path, help="The path to divine.exe. Only used if a story.div.osi is included.")
+    parser.add_argument("--osi", type=Path, help="The path to a save file or story.div.osi to extract Osiris data from. This is only used to generate function overloads for calls that also have procs defined.")
 
     parser.description = "Generate an lua annotations helper file, for Osi, from a story_header.div"
     new_line = "\n    "
     parser.usage = f"""
     Example usage:
-    python create_osi_lua.py -h "G:/Modding/BG3/_Extracted/Mods/Gustav/Story/RawFiles/story_header.div" -d "C:\lslib\divine.exe" -f "G:/Modding/BG3/_Extracted/Mods/GustavDev/Story/story.div.osi"
+    python create_osi_lua.py --header "G:/Modding/BG3/_Extracted/Mods/Gustav/Story/RawFiles/story_header.div" --divine "C:\lslib\divine.exe" --osi "G:/Modding/BG3/_Extracted/Mods/GustavDev/Story/story.div.osi"
     """
     args = parser.parse_args()
     
+    header_file:Path = args.header
     output_path:Path = args.output
-    osi_file:Path = args.file
+    osi_file:Path = args.osi
     lslib_dll:Path = args.divine.is_dir() and args.divine.joinpath("LSLib.dll") or args.divine.parent.joinpath("LSLib.dll")
-    run(output_path, osi_file, lslib_dll)
+    run(header_file, output_path, osi_file, lslib_dll)
