@@ -114,11 +114,12 @@ class OsirisType:
 class FuncVariable:
     name:str
     type:int
-
-    def __post_init__(self):
-        self.name = self.name.strip()
-        self.name = self.name[0].lower() + self.name[1:]
-
+        
+    def get_lua_name(self):
+        result = self.name.strip()
+        result = result[0].lower() + result[1:]
+        return result
+        
     def export_type(self):
         t = types.get(self.type, None)
         if t:
@@ -155,7 +156,7 @@ class CallDefinition:
         return ""
     
     def export_as_overload(self):
-        params_txt = ", ".join([f'{x.name}:{x.export_type()}' for x in self.parameters])
+        params_txt = ", ".join([f'{x.get_lua_name()}:{x.export_type()}' for x in self.parameters])
         return f"---@overload fun({params_txt})"
 
     def export(self):
@@ -165,8 +166,8 @@ class CallDefinition:
         count = len(self.parameters)
         for p in self.parameters:
             i = i + 1
-            params_doc += "---@param {} {}".format(p.name, p.export_type())
-            params_func += p.name
+            params_doc += "---@param {} {}".format(p.get_lua_name(), p.export_type())
+            params_func += p.get_lua_name()
             if (i < count):
                 params_doc += '\n'
                 params_func += ", "
@@ -204,8 +205,8 @@ class QueryDefinition(CallDefinition):
         count = len(self.parameters)
         for p in self.parameters:
             i = i + 1
-            params_doc += "---@param {} {}".format(p.name, p.export_type())
-            params_func += p.name
+            params_doc += "---@param {} {}".format(p.get_lua_name(), p.export_type())
+            params_func += p.get_lua_name()
             if (i < count):
                 params_doc += '\n'
                 params_func += ", "
@@ -215,7 +216,7 @@ class QueryDefinition(CallDefinition):
             params_doc += '\n'
         for p in self.out:
             i = i + 1
-            params_doc += "---@return {} {}".format(p.export_type(), p.name)
+            params_doc += "---@return {} {}".format(p.export_type(), p.get_lua_name())
             if (i < count):
                 params_doc += '\n'
         template = func_template
@@ -229,6 +230,7 @@ name_to_type:dict[str, OsirisType] = {}
 call_definitions = []
 query_definitions = []
 extender_definitions = []
+event_definitions = []
 
 function_map:dict[str, CallDefinition|QueryDefinition] = {}
 
@@ -244,7 +246,7 @@ def build_call(line):
         func_name = m.group(2)
         params_text = m.group(3)
         params_match = pattern_params.finditer(params_text)
-
+        
         call = CallDefinition(func_name)
         for match in params_match:
             param_type = get_param_type(match.group(1))
@@ -289,10 +291,8 @@ def build_query(line):
             query.out.append(p)
         #print("New query: " + query.to_string())
         if "NRD" in func_name:
-            global extender_definitions
             extender_definitions.append(query)
         else:
-            global query_definitions
             query_definitions.append(query)
         function_map[query.name] = query
     else:
@@ -327,8 +327,8 @@ def process_line(line):
 
 def export(output_path:Path):
     osi_template = """
----@diagnostic disable
 ---@meta
+---@diagnostic disable
 
 {types}
 
@@ -363,6 +363,19 @@ if Osi == nil then Osi = {{}} end
     output_str = osi_template.format(types=types_str, queries=queries_str, calls=calls_str)
 
     export_file(output_path, output_str)
+    
+    if len(event_definitions) > 0:
+        events_str = ""
+        for func in event_definitions:	
+            events_str += '\t{}\n'.format(func.export())
+
+        output_str = f"""---@meta
+        ---@diagnostics disable
+        if Osi == nil then Osi = {{}} end
+    {events_str}
+        """
+
+        export_file(output_path.parent.joinpath("Osi.Events.lua"), output_str)
 
 def run(header_file:Path, output_path:Path, osi_file:Path, lslib_dll:Path):
     print(f"Parsing header: {header_file}")
