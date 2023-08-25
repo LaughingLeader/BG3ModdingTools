@@ -1,8 +1,13 @@
 ---@meta
 ---@diagnostic disable
 
+--#region Types
+
+--Base Types
 ---@alias INTEGER64 integer
 ---@alias GUIDSTRING string
+
+--Alias Types
 ---@alias CHARACTER GUIDSTRING
 ---@alias ITEM GUIDSTRING
 ---@alias TRIGGER GUIDSTRING
@@ -23,7 +28,13 @@
 ---@alias DISTURBANCEPROPERTY GUIDSTRING
 ---@alias SHAPESHIFTRULE GUIDSTRING
 ---@alias DIFFICULTYCLASS GUIDSTRING
+---@alias GOLDREWARD GUIDSTRING
+---@alias TUTORIALEVENT GUIDSTRING
+---@alias DLC GUIDSTRING
+---@alias RULESETMODIFIER GUIDSTRING
+---@alias UNIFIEDTUTORIAL GUIDSTRING
 
+--Enum Types
 ---@alias DEATHTYPE
 ---| "None" # 0
 ---| "Acid" # 1
@@ -47,12 +58,10 @@
 ---| "Enabled" # 0
 ---| "Disabled" # 1
 ---| "DisabledUntilMove" # 2
----@alias GOLDREWARD GUIDSTRING
 
 ---@alias LQUANT
 ---| "ANY" # 0
 ---| "ALL" # 1
----@alias TUTORIALEVENT GUIDSTRING
 
 ---@alias TAGCATEGORY
 ---| "Undefined" # 0
@@ -73,8 +82,6 @@
 ---| "PlayerRace" # 15
 ---| "CharacterSheet" # 16
 ---| "SpellCondition" # 17
----@alias DLC GUIDSTRING
----@alias RULESETMODIFIER GUIDSTRING
 
 ---@alias ARMOURSET
 ---| "Normal" # 0
@@ -104,7 +111,6 @@
 ---| "Default" # 0
 ---| "Tradable" # 1
 ---| "NonTradable" # 2
----@alias UNIFIEDTUTORIAL GUIDSTRING
 
 ---@alias EQUIPMENTSLOT
 ---| "Helmet" # 0
@@ -142,6 +148,8 @@
 ---| "Barter" # 0
 ---| "Trade" # 1
 ---| "Donate" # 2
+
+--#endregion
 
 if Osi == nil then Osi = {} end
 

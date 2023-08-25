@@ -50,9 +50,9 @@ function Osi.{name}({params_func}) end"""
 func_template_nodesc_noparams = """
 function Osi.{name}({params_func}) end"""
 
-enum_alias_template = """
----@alias {name}
-{entries}"""
+enum_alias_template = """---@alias {name}
+{entries}
+"""
 
 type_remap = {
     1: "integer",
@@ -329,11 +329,31 @@ def process_line(line):
             build_query(line)
     #print("{} | {} {}".format(line, "query" in line, "syscall " in line))
 
+def get_types_export():
+    base_types = [x for x in types.values() if x.id == x.actual_id]
+    enum_types = [x for x in types.values() if len(x.enum_values) > 0]
+    alias_types = [x for x in types.values() if not x in base_types and not x in enum_types]
+    
+    return ("\n".join([x.export_lua() for x in base_types if not x.skip_export]),
+            "\n".join([x.export_lua() for x in alias_types if not x.skip_export]),
+            "\n".join([x.export_lua() for x in enum_types if not x.skip_export]),
+            )
+
 def export(output_path:Path):
     osi_template = """---@meta
 ---@diagnostic disable
 
+--#region Types
+
+--Base Types
 {types}
+
+--Alias Types
+{aliases}
+
+--Enum Types
+{enums}
+--#endregion
 
 if Osi == nil then Osi = {{}} end
 
@@ -348,8 +368,11 @@ if Osi == nil then Osi = {{}} end
 
     output_str= ""
     output_path.parent.mkdir(exist_ok=True, parents=True)
+    
+    def get_type_sort(t:OsirisType):
+        return (len(t.enum_values) > 0, t.name)
 
-    types_str = "\n".join([x.export_lua() for x in types.values() if not x.skip_export])
+    types_str,aliases_str,enums_str = get_types_export()
     calls_str = ""
     queries_str = ""
     extender_str = ""
@@ -363,7 +386,7 @@ if Osi == nil then Osi = {{}} end
     for func in extender_definitions:	
         extender_str += '\t{}\n'.format(func.export())
 
-    output_str = osi_template.format(types=types_str, queries=queries_str, calls=calls_str)
+    output_str = osi_template.format(types=types_str, aliases=aliases_str, enums=enums_str, queries=queries_str, calls=calls_str)
 
     export_file(output_path, output_str)
     
