@@ -140,6 +140,7 @@ def generate_texture_lsf(uuid:str, dds_path:Path, resource_path:Path, lslib_path
     
     stream:MemoryStream = None
     writer:StreamWriter = None
+    result = False
     try:
         stream = MemoryStream()
         writer = StreamWriter(stream)
@@ -151,13 +152,13 @@ def generate_texture_lsf(uuid:str, dds_path:Path, resource_path:Path, lslib_path
         conversionParams = ResourceConversionParameters.FromGameVersion(Game.BaldursGate3)
         ResourceUtils.SaveResource(resource, str(resource_path.absolute()), ResourceFormat.LSF, conversionParams)
         print(f"Created {resource_path}")
-        return True
+        result = True
     finally:
         if stream != None:
             stream.Dispose()
         if writer != None:
             writer.Dispose()
-    return False
+        return result
 
 def get_icons(icons_dir:Path, icon_size:tuple[int,int], texture_size:tuple[int,int])->list[Icon]:
     icons = []
@@ -224,7 +225,7 @@ def generate_texture(icons:list[Icon], texture_output:Path, texture_size:tuple[i
     texture_image.save(temp_texture_png)
     common.log(script_name, f"Converting texture to dds at '{texture_output}'.")
 
-    command = f"texconv -m {0 if do_mipmaps else 1} -ft dds -f {dds_format} -nologo -timing -y -o \"{texture_output.parent}\" \"{temp_texture_png.absolute()}\""
+    command = f"texconv -m {0 if do_mipmaps else 1} -ft DDS -f {dds_format} -nologo -timing -y -o \"{texture_output.parent}\" \"{temp_texture_png.absolute()}\""
     common.log(script_name, f"Running command '{command}'.")
     p = subprocess.run(command,
         shell=True,
