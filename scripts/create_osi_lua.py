@@ -47,10 +47,12 @@ func_template_nodesc = """
 {params_doc}
 function Osi.{name}({params_func}) end"""
 
+func_template_nodesc_noparams = """
+function Osi.{name}({params_func}) end"""
+
 enum_alias_template = """
 ---@alias {name}
-{entries}
-"""
+{entries}"""
 
 type_remap = {
     1: "integer",
@@ -174,7 +176,9 @@ class CallDefinition:
         template = func_template
         if self.description == "":
             template = func_template_nodesc
-        return template.format(params_doc = params_doc, 
+            if len(self.parameters) == 0:
+                return func_template_nodesc_noparams.format(name = self.name, params_func = params_func, desc=self.description)
+        return template.format(params_doc = params_doc,
             name = self.name, params_func = params_func, desc=self.description)
 
 @dataclass
@@ -326,8 +330,7 @@ def process_line(line):
     #print("{} | {} {}".format(line, "query" in line, "syscall " in line))
 
 def export(output_path:Path):
-    osi_template = """
----@meta
+    osi_template = """---@meta
 ---@diagnostic disable
 
 {types}
