@@ -124,15 +124,20 @@ texture_resource_template = """<?xml version="1.0" encoding="utf-8"?>
 	</region>
 </save>"""
 
-def generate_texture_lsf(uuid:str, dds_path:Path, resource_path:Path, lslib_path:Path):
+def generate_texture_lsf(uuid:str, dds_path:Path, resource_path:Path, lslib_path:Path, resource_lsx_output:Path = None):
     if not common.import_lslib(lslib_path):
         print(f"Path to lslib is invalid: {lslib_path}")
         return False
     resource_path.parent.mkdir(exist_ok=True, parents=True)
     dds_path_str = str(dds_path)
     public_index = dds_path_str.index("Public")
-    local_dds_path = dds_path_str[public_index]
+    local_dds_path = dds_path_str[public_index:]
     texture_lsx = texture_resource_template.format(uuid=uuid, name=dds_path.name, dds=local_dds_path)
+    
+    if resource_lsx_output:
+        resource_lsx_output.parent.mkdir(exist_ok=True, parents=True)
+        resource_lsx_output.write_text(texture_lsx)
+        print(f"Saved resource as an .lsx to {resource_lsx_output}")
     
     from LSLib.LS import ResourceUtils, ResourceConversionParameters # type: ignore 
     from LSLib.LS.Enums import Game, ResourceFormat # type: ignore 
@@ -283,6 +288,7 @@ if __name__ == "__main__":
     parser.add_argument("-m", "--mipmaps", action='store_true', help='Generate mipmaps (default False).')
     parser.add_argument("-f", "--ddsformat", type=str, default="DXT5", help='The dds format to use (DXT1, DXT5 etc). Defaults to DXT5 (BC3_UNORM).')
     parser.add_argument("-r", "--resource", type=Path, help='The path to content texture resource lsf to generate (optional). This requires --divine to be set, or a LSLIB_PATH environment variable to be set.')
+    parser.add_argument("--resourcelsx", type=Path, help='Optional path to output the content resource to, in lsx format.')
     parser.add_argument("--ddstool", type=Path, help='The path to the "DirectXTex texture processing library" (directory where texconv is).')
     parser.add_argument("--iconsize", type=int, default=(64,64), nargs="+", help='The icon width/height/.')
     parser.add_argument("--texturesize", type=int, default=(2048,2048), nargs="+", help='The texture width/height/.')
@@ -298,6 +304,7 @@ if __name__ == "__main__":
         atlas_output:Path = args.atlas
         texture_output:Path = args.texture
         resource_output:Path = args.resource
+        resource_lsx_output:Path = args.resourcelsx
         atlas_uuid:str = args.uuid
         dds_format:str = args.ddsformat
         icon_size:tuple[int,int] = args.iconsize
@@ -310,6 +317,6 @@ if __name__ == "__main__":
             generate_atlas_lsx(icons, atlas_output, texture_output, atlas_uuid, icon_size, texture_size)
             generate_texture(icons, texture_output, texture_size, dds_format, do_mipmaps)
         if resource_output:
-            generate_texture_lsf(atlas_uuid, texture_output, resource_output, lslib_dll)
+            generate_texture_lsf(atlas_uuid, texture_output, resource_output, lslib_dll, resource_lsx_output)
         
     print("Created atlas in {} seconds for {} icons.".format(timeit.timeit(run_cmd, number=1), totalIcons))
