@@ -20,7 +20,7 @@ def export_file(path, contents):
         f.close()
         return True
     except Exception as e:
-        print("Erroring writing '{}': {}".format(path.name, e))
+        print("Error writing '{}': {}".format(path.name, e))
     return False
 
 def is_empty(line):
@@ -77,7 +77,9 @@ class EnumValue:
     value:int
     
     def to_lua(self):
-        return f"---| \"{self.name}\" # {self.value}"
+        #return f"---| \"{self.name}\" # {self.value}"
+        return f"---| `{self.value}` # {self.name}"
+        #return f"{self.name} = {self.value}"
 
 @dataclass
 class OsirisType:
@@ -368,23 +370,11 @@ if Osi == nil then Osi = {{}} end
 
     output_str= ""
     output_path.parent.mkdir(exist_ok=True, parents=True)
-    
-    def get_type_sort(t:OsirisType):
-        return (len(t.enum_values) > 0, t.name)
 
     types_str,aliases_str,enums_str = get_types_export()
-    calls_str = ""
-    queries_str = ""
-    extender_str = ""
-
-    for func in call_definitions:	
-        calls_str += '\t{}\n'.format(func.export())
-
-    for func in query_definitions:	
-        queries_str += '\t{}\n'.format(func.export())
-
-    for func in extender_definitions:	
-        extender_str += '\t{}\n'.format(func.export())
+    calls_str = "\n".join([x.export() for x in call_definitions])
+    queries_str = "\n".join([x.export() for x in query_definitions])
+    #extender_str = "\n".join([x.export() for x in extender_definitions])
 
     output_str = osi_template.format(types=types_str, aliases=aliases_str, enums=enums_str, queries=queries_str, calls=calls_str)
 
@@ -432,11 +422,13 @@ def run(header_file:Path, output_path:Path, osi_file:Path, lslib_dll:Path):
     print(output_path)
 
 if __name__ == "__main__":
-    default_output_path = Path(script_dir.joinpath("output/lua/Osi.lua"))
+    default_output_path = Path(script_dir.parent.joinpath("generated/Osi.lua"))
     default_divine_path = Path(os.environ.get("LSLIB_PATH", None))
 
+    debug = False
+    
     parser = argparse.ArgumentParser()
-    parser.add_argument("--header", type=Path, required=True, help="The path to a story_header.div file.")
+    parser.add_argument("--header", type=Path, required=not debug, help="The path to a story_header.div file.")
     parser.add_argument("-o", "--output", type=Path, default=default_output_path, help="The output file. Defaults to output/lua/Osi.lua")
     parser.add_argument("--divine", type=Path, default=default_divine_path, help="The path to divine.exe. Only used if a story.div.osi is included.")
     parser.add_argument("--osi", type=Path, help="The path to a save file or story.div.osi to extract Osiris data from. This is only used to generate function overloads for calls that also have procs defined.")
@@ -448,6 +440,10 @@ if __name__ == "__main__":
     python create_osi_lua.py --header "G:/Modding/BG3/_Extracted/Mods/Gustav/Story/RawFiles/story_header.div" --divine "C:\lslib\divine.exe" --osi "G:/Modding/BG3/_Extracted/Mods/GustavDev/Story/story.div.osi"
     """
     args = parser.parse_args()
+    
+    if debug:
+        args.header = Path("G:/Modding/BG3/_Extracted/_Patches/Patch1/Mods/Gustav/Story/RawFiles/story_header.div", help="The path to a story_header.div file.")
+        args.osi = Path("G:/Modding/BG3/_Extracted/Mods/GustavDev/Story/story.div.osi")
     
     header_file:Path = args.header
     output_path:Path = args.output
