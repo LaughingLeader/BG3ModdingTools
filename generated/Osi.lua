@@ -377,6 +377,10 @@ function Osi.GetEquippedShield(character) end
 ---@return ITEM item
 function Osi.GetEquippedItem(character, slotname) end
 
+---@param character CHARACTER
+---@return integer bool
+function Osi.HasNoFollowFlag(character) end
+
 ---@param character1 CHARACTER
 ---@param character2 CHARACTER
 ---@return integer bool
@@ -544,6 +548,10 @@ function Osi.CanCastSpellOnEnemyInSameCombat(character, spellID) end
 ---@param equipment ITEM
 ---@return integer isProficient
 function Osi.IsProficientWith(character, equipment) end
+
+---@param victim CHARACTER
+---@return integer inDanger
+function Osi.IsInDangerOfAttackOfOpportunity(victim) end
 
 ---@param item ITEM
 ---@return integer value
@@ -1400,6 +1408,11 @@ function Osi.HasAppliedStatus(target, status) end
 ---@return integer bool
 function Osi.HasAppliedStatusWithGroup(target, statusGroup) end
 
+---@param target GUIDSTRING
+---@param statusType string
+---@return integer bool
+function Osi.HasAppliedStatusOfType(target, statusType) end
+
 ---@param statusID string
 ---@return string statusType
 function Osi.GetStatusType(statusID) end
@@ -1732,6 +1745,11 @@ function Osi.GetBaseFaction(target) end
 ---@param targetFaction FACTION
 ---@return integer relation
 function Osi.GetRelation(sourceFaction, targetFaction) end
+
+---@param sourceFaction FACTION
+---@param targetFaction FACTION
+---@return integer relation
+function Osi.GetRelationRaw(sourceFaction, targetFaction) end
 
 ---@param entity GUIDSTRING
 ---@param faction FACTION
@@ -2093,6 +2111,7 @@ function Osi.StartGameplayTimeline(timeline, speaker1, speaker2, speaker3, speak
 ---@param dialog DIALOGRESOURCE
 ---@param trigger TRIGGER
 ---@return integer success
+---@return integer dialogID
 function Osi.StartWorldTimeline(dialog, trigger) end
 
 ---@param number integer
@@ -2532,6 +2551,10 @@ function Osi.ExecuteDeal(character, deal, attitudeDiff) end
 ---@param follower CHARACTER
 ---@param leader CHARACTER
 function Osi.SetFollowCharacter(follower, leader) end
+
+---@param character CHARACTER
+---@param flagValue integer
+function Osi.SetNoFollowFlag(character, flagValue) end
 
 ---@param attaching CHARACTER
 ---@param toCharacter CHARACTER
@@ -3178,6 +3201,10 @@ function Osi.ToInventory(object, targetObject, amount, showNotification, clearOr
 ---@param bool integer
 function Osi.SetOnStage(object, bool) end
 
+---@param avatarEntity GUIDSTRING
+---@param bool integer
+function Osi.DismissAvatar(avatarEntity, bool) end
+
 ---@param entity GUIDSTRING
 ---@param moveAsideCharacters integer
 ---@param sendItemsToCamp integer
@@ -3353,7 +3380,12 @@ function Osi.MusicPlayGeneral(eventName) end
 
 ---@param character CHARACTER
 ---@param event string
-function Osi.MoviePlay(character, event) end
+---@param fadeInOnEnd integer
+function Osi.MoviePlay(character, event, fadeInOnEnd) end
+
+---@param character CHARACTER
+---@param movieName string
+function Osi.TriggerMovieEndFadeIn(character, movieName) end
 
 ---@param character CHARACTER
 ---@param dialogGuidString DIALOGRESOURCE
@@ -3415,33 +3447,6 @@ function Osi.DebugBreak(message) end
 
 ---@param character CHARACTER
 ---@param seconds number
----@param toBlack integer
----@param fadeID string
-function Osi.FadeToBlack(character, seconds, toBlack, fadeID) end
-
----@param character CHARACTER
----@param seconds number
----@param toWhite integer
----@param fadeID string
-function Osi.FadeToWhite(character, seconds, toWhite, fadeID) end
-
----@param character CHARACTER
----@param seconds number
----@param fadeID string
-function Osi.FadeOutBlack(character, seconds, fadeID) end
-
----@param character CHARACTER
----@param seconds number
----@param fadeID string
-function Osi.FadeOutWhite(character, seconds, fadeID) end
-
----@param character CHARACTER
----@param seconds number
----@param fadeID string
-function Osi.FadeIn(character, seconds, fadeID) end
-
----@param character CHARACTER
----@param seconds number
 ---@param fadeStyle integer
 ---@param fadeID string
 function Osi.ScreenFadeTo(character, seconds, fadeStyle, fadeID) end
@@ -3452,6 +3457,10 @@ function Osi.ScreenFadeTo(character, seconds, fadeStyle, fadeID) end
 ---@param fadeID string
 ---@param timelineFade integer
 function Osi.ClearScreenFade(character, seconds, fadeID, timelineFade) end
+
+---@param userID integer
+---@param seconds number
+function Osi.ClearTimelineScreenFade(userID, seconds) end
 
 ---@param character CHARACTER
 ---@param bookname string
@@ -3657,6 +3666,11 @@ function Osi.UnlockAchievement(achievementID, character) end
 function Osi.ProgressAchievement(achievementID, character, progress) end
 
 ---@param achievementID string
+---@param character CHARACTER
+---@param progress integer
+function Osi.SetAchievementProgressForPlayer(achievementID, character, progress) end
+
+---@param achievementID string
 ---@param value integer
 function Osi.SetAchievementProgress(achievementID, value) end
 
@@ -3677,6 +3691,9 @@ function Osi.SetIsInDangerZone(character, isInDangerZone) end
 ---@param targetEntity GUIDSTRING
 ---@param event string
 function Osi.SendArenaCameraEvent(sourceEntity, targetEntity, event) end
+
+---@param partySizeOverride integer
+function Osi.SetMaxPartySizeOverride(partySizeOverride) end
 
 ---@param inventoryHolder GUIDSTRING
 ---@param treasureID string
@@ -4565,6 +4582,9 @@ function Osi.DialogSetTeleportPartyOnEnded(instanceID, trigger) end
 ---@param level string
 function Osi.DialogSetTeleportPartyToLevelOnEnded(instanceID, level) end
 
+---@param speaker GUIDSTRING
+function Osi.DialogRequestStopTimelineDialogs(speaker) end
+
 ---@param bark VOICEBARKRESOURCE
 ---@param source CHARACTER
 function Osi.StartVoiceBark(bark, source) end
@@ -4631,5 +4651,8 @@ function Osi.GossipCompleted(dialog, successful) end
 ---@param character CHARACTER
 ---@param canGossip integer
 function Osi.SetCanGossip(character, canGossip) end
+
+---@param dialogID integer
+function Osi.StopWorldTimeline(dialogID) end
 --#endregion
     
