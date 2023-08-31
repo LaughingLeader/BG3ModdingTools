@@ -62,12 +62,12 @@ function Osi.CharacterDisarmed(character, item, slotName) end
 function Osi.LearnedSpell(character, spell) end
 	
 ---@param character CHARACTER
----@param item_1 ITEM
----@param item_2 ITEM
----@param item_3 ITEM
----@param item_4 ITEM
----@param item_5 ITEM
-function Osi.StoppedCombining(character, item_1, item_2, item_3, item_4, item_5) end
+---@param item1 ITEM
+---@param item2 ITEM
+---@param item3 ITEM
+---@param item4 ITEM
+---@param item5 ITEM
+function Osi.StoppedCombining(character, item1, item2, item3, item4, item5) end
 	
 ---@param character CHARACTER
 ---@param item ITEM
@@ -203,20 +203,20 @@ function Osi.EnteredTrigger(character, trigger) end
 function Osi.LeftTrigger(character, trigger) end
 	
 ---@param player CHARACTER
----@param nPC CHARACTER
+---@param npc CHARACTER
 ---@param item ITEM
 ---@param itemTemplate GUIDSTRING
 ---@param amount integer
 ---@param goldValue integer
-function Osi.CharacterPickpocketSuccess(player, nPC, item, itemTemplate, amount, goldValue) end
+function Osi.CharacterPickpocketSuccess(player, npc, item, itemTemplate, amount, goldValue) end
 	
 ---@param player CHARACTER
----@param nPC CHARACTER
-function Osi.RequestPickpocket(player, nPC) end
+---@param npc CHARACTER
+function Osi.RequestPickpocket(player, npc) end
 	
 ---@param player CHARACTER
----@param nPC CHARACTER
-function Osi.CharacterPickpocketFailed(player, nPC) end
+---@param npc CHARACTER
+function Osi.CharacterPickpocketFailed(player, npc) end
 	
 ---@param player CHARACTER
 ---@param lootedCharacter CHARACTER
@@ -433,23 +433,23 @@ function Osi.ArmorSetChanged(character, eArmorSet) end
 ---@param character CHARACTER
 function Osi.DeathSaveStable(character) end
 	
----@param item_1 ITEM
----@param item_2 ITEM
----@param item_3 ITEM
----@param item_4 ITEM
----@param item_5 ITEM
+---@param item1 ITEM
+---@param item2 ITEM
+---@param item3 ITEM
+---@param item4 ITEM
+---@param item5 ITEM
 ---@param character CHARACTER
 ---@param newItem ITEM
-function Osi.Combined(item_1, item_2, item_3, item_4, item_5, character, newItem) end
+function Osi.Combined(item1, item2, item3, item4, item5, character, newItem) end
 	
----@param template_1 ITEMROOT
----@param template_2 ITEMROOT
----@param template_3 ITEMROOT
----@param template_4 ITEMROOT
----@param template_5 ITEMROOT
+---@param template1 ITEMROOT
+---@param template2 ITEMROOT
+---@param template3 ITEMROOT
+---@param template4 ITEMROOT
+---@param template5 ITEMROOT
 ---@param character CHARACTER
 ---@param newItem ITEM
-function Osi.TemplatesCombined(template_1, template_2, template_3, template_4, template_5, character, newItem) end
+function Osi.TemplatesCombined(template1, template2, template3, template4, template5, character, newItem) end
 	
 ---@param item ITEM
 function Osi.Moved(item) end
@@ -712,10 +712,10 @@ function Osi.LeftLevel(object, level) end
 	
 function Osi.CreditsEnded() end
 	
----@param dLC DLC
+---@param dlc DLC
 ---@param userID integer
 ---@param installed integer
-function Osi.DLCUpdated(dLC, userID, installed) end
+function Osi.DLCUpdated(dlc, userID, installed) end
 	
 ---@param sourceFaction FACTION
 ---@param targetFaction FACTION
@@ -739,13 +739,13 @@ function Osi.TemporaryHostileRelationRemoved(enemy, sourceFaction, targetFaction
 function Osi.RequestCanDisarmTrap(character, item, requestID) end
 	
 ---@param character CHARACTER
----@param item_1 ITEM
----@param item_2 ITEM
----@param item_3 ITEM
----@param item_4 ITEM
----@param item_5 ITEM
+---@param item1 ITEM
+---@param item2 ITEM
+---@param item3 ITEM
+---@param item4 ITEM
+---@param item5 ITEM
 ---@param requestID integer
-function Osi.RequestCanCombine(character, item_1, item_2, item_3, item_4, item_5, requestID) end
+function Osi.RequestCanCombine(character, item1, item2, item3, item4, item5, requestID) end
 	
 ---@param character CHARACTER
 ---@param item ITEM

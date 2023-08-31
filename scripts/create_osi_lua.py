@@ -122,6 +122,10 @@ class FuncVariable:
         
     def get_lua_name(self):
         result = self.name.strip()
+        if result.upper() == result:
+            result = result.lower()
+        if "_" in result:
+            result = result.replace("_", "")
         result = result[0].lower() + result[1:]
         return result
         

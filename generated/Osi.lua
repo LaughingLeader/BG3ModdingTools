@@ -896,7 +896,7 @@ function Osi.DialogGetNumberOfInvolvedNPCs(instanceID) end
 
 ---@param instanceID integer
 ---@param index integer
----@return GUIDSTRING nPC
+---@return GUIDSTRING npc
 function Osi.DialogGetInvolvedNPC(instanceID, index) end
 
 ---@param flag FLAG
@@ -1158,7 +1158,7 @@ function Osi.IsInvisible(object) end
 function Osi.IsInvisibleByScript(object) end
 
 ---@param entity GUIDSTRING
----@return integer hP
+---@return integer hp
 function Osi.GetHitpoints(entity) end
 
 ---@param entity GUIDSTRING
@@ -1303,14 +1303,14 @@ function Osi.CanFight(entity) end
 function Osi.CanJoinCombat(entity) end
 
 ---@param entity GUIDSTRING
----@param mainhand_Offhand_Any string
+---@param mainhandOffhandAny string
 ---@return integer bool
-function Osi.HasMeleeWeaponEquipped(entity, mainhand_Offhand_Any) end
+function Osi.HasMeleeWeaponEquipped(entity, mainhandOffhandAny) end
 
 ---@param entity GUIDSTRING
----@param mainhand_Offhand_Any string
+---@param mainhandOffhandAny string
 ---@return integer bool
-function Osi.HasRangedWeaponEquipped(entity, mainhand_Offhand_Any) end
+function Osi.HasRangedWeaponEquipped(entity, mainhandOffhandAny) end
 
 ---@param weapon ITEM
 ---@param character CHARACTER
@@ -1326,9 +1326,9 @@ function Osi.GetMultiplayerCharacter(character) end
 function Osi.IsAnyTutorialShowingFor(character) end
 
 ---@param character CHARACTER
----@param dLC DLC
+---@param dlc DLC
 ---@return integer hasDLC
-function Osi.CharacterHasDLC(character, dLC) end
+function Osi.CharacterHasDLC(character, dlc) end
 
 ---@return integer userCount
 function Osi.GetUserCount() end
@@ -1338,12 +1338,12 @@ function Osi.GetMaxPartySize() end
 
 ---@param source GUIDSTRING
 ---@param varName string
----@return GUIDSTRING uUID
+---@return GUIDSTRING uuid
 function Osi.GetVarObject(source, varName) end
 
 ---@param source GUIDSTRING
 ---@param varName string
----@return GUIDSTRING uUID
+---@return GUIDSTRING uuid
 function Osi.GetVarUUID(source, varName) end
 
 ---@param target GUIDSTRING
@@ -1487,7 +1487,7 @@ function Osi.IsTradable(entity) end
 function Osi.IsDroppedOnDeath(entity) end
 
 ---@param target GUIDSTRING
----@return string uUID
+---@return string uuid
 function Osi.GetUUID(target) end
 
 ---@param target GUIDSTRING
@@ -2021,14 +2021,14 @@ function Osi.StartBehaviorDialog_Internal(dialog, allowAttack, speaker1, speaker
 
 ---@param crimeID integer
 ---@param dialog DIALOGRESOURCE
----@param nPC GUIDSTRING
+---@param npc GUIDSTRING
 ---@param criminal1 GUIDSTRING
 ---@param criminal2 GUIDSTRING
 ---@param criminal3 GUIDSTRING
 ---@param criminal4 GUIDSTRING
 ---@return integer success
 ---@return integer dialogInstance
-function Osi.DialogStartCrimeDialog(crimeID, dialog, nPC, criminal1, criminal2, criminal3, criminal4) end
+function Osi.DialogStartCrimeDialog(crimeID, dialog, npc, criminal1, criminal2, criminal3, criminal4) end
 
 ---@param instanceID integer
 ---@return integer isCrimeDialog
@@ -2407,9 +2407,9 @@ function Osi.OpenMessageBoxYesNo(character, message) end
 
 ---@param character CHARACTER
 ---@param message string
----@param choice_1 string
----@param choice_2 string
-function Osi.OpenMessageBoxChoice(character, message, choice_1, choice_2) end
+---@param choice1 string
+---@param choice2 string
+function Osi.OpenMessageBoxChoice(character, message, choice1, choice2) end
 
 ---@overload fun(a0:CHARACTER, a1:ITEM)
 ---@overload fun(a0:CHARACTER, a1:ITEM, a2:integer)
@@ -2539,9 +2539,9 @@ function Osi.StopAllEffectsWithName(character, fxName) end
 function Osi.ActivateTrade(player, trader, canSell, tradeMode, initiallySelectedTradeObject, itemsTagFilter) end
 
 ---@param player CHARACTER
----@param nPC CHARACTER
+---@param npc CHARACTER
 ---@param success integer
-function Osi.StartPickpocket(player, nPC, success) end
+function Osi.StartPickpocket(player, npc, success) end
 
 ---@param character CHARACTER
 ---@param deal integer
@@ -2778,9 +2778,9 @@ function Osi.SetStoryShortRestEnabled(character) end
 
 ---@param character CHARACTER
 ---@param amount number
----@param optionalReason_LocalizedTextKey string
----@param optionalDescription_LocalizedTextKey string
-function Osi.GiveInspirationPoints(character, amount, optionalReason_LocalizedTextKey, optionalDescription_LocalizedTextKey) end
+---@param optionalReasonLocalizedTextKey string
+---@param optionalDescriptionLocalizedTextKey string
+function Osi.GiveInspirationPoints(character, amount, optionalReasonLocalizedTextKey, optionalDescriptionLocalizedTextKey) end
 
 ---@param character CHARACTER
 ---@param goal GUIDSTRING
@@ -3353,9 +3353,9 @@ function Osi.QuestMessageHide(messageId) end
 
 ---@overload fun(a0:GUIDSTRING, a1:integer)
 ---@param entity GUIDSTRING
----@param hP integer
+---@param hp integer
 ---@param healTypes string
-function Osi.SetHitpoints(entity, hP, healTypes) end
+function Osi.SetHitpoints(entity, hp, healTypes) end
 
 ---@overload fun(a0:GUIDSTRING, a1:number)
 ---@param entity GUIDSTRING
@@ -4024,9 +4024,9 @@ function Osi.CrimeMergeEvidenceFrom(targetCrimeID, sourceCrimeID) end
 function Osi.ShutdownCrimeSystem() end
 
 ---@param criminal GUIDSTRING
----@param nPC GUIDSTRING
+---@param npc GUIDSTRING
 ---@param ignoreDuration integer
-function Osi.CrimeIgnoreAllCrimesForCriminal(criminal, nPC, ignoreDuration) end
+function Osi.CrimeIgnoreAllCrimesForCriminal(criminal, npc, ignoreDuration) end
 
 ---@param crimeID integer
 ---@param criminal1 GUIDSTRING
@@ -4036,12 +4036,12 @@ function Osi.CrimeIgnoreAllCrimesForCriminal(criminal, nPC, ignoreDuration) end
 function Osi.CrimeResetInterrogationForCriminals(crimeID, criminal1, criminal2, criminal3, criminal4) end
 
 ---@param crimeID integer
----@param nPC GUIDSTRING
-function Osi.CrimeIgnoreCrime(crimeID, nPC) end
+---@param npc GUIDSTRING
+function Osi.CrimeIgnoreCrime(crimeID, npc) end
 
 ---@param crimeID integer
----@param nPC GUIDSTRING
-function Osi.CrimeStopIgnoringCrime(crimeID, nPC) end
+---@param npc GUIDSTRING
+function Osi.CrimeStopIgnoringCrime(crimeID, npc) end
 
 ---@param platform GUIDSTRING
 function Osi.DestroyPlatform(platform) end
