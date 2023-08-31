@@ -31,6 +31,7 @@ os.chdir(script_dir)
 
 #pattern_call = r"^(call|syscall|event)\s*?(.*?)\((.*)\) .*$"
 pattern_call = re.compile("^(call)\s*?(.*?)\((.*)\) .*$")
+pattern_event = re.compile("^(event)\s*?(.*?)\((.*)\) .*$")
 pattern_params = re.compile("\(+?(.*?)\)_(\w+)")
 pattern_query = re.compile("(query)\s*?(.*?)\((.*)\).*$")
 pattern_query_input = re.compile("\[in\]\((.*?)\)_(\w+)")
@@ -246,8 +247,8 @@ def get_param_type(match):
         return t.id
     return match
 
-def build_call(line):
-    m = pattern_call.search(line)
+def build_call(target_dict:list, pattern:re.Pattern[str], line):
+    m = pattern.search(line)
     if m:
         func_name = m.group(2)
         params_text = m.group(3)
@@ -264,10 +265,7 @@ def build_call(line):
             
             p = FuncVariable(param_name, param_type)
             call.parameters.append(p)
-        if "NRD" in func_name:
-            extender_definitions.append(call)
-        else:
-            call_definitions.append(call)
+        target_dict.append(call)
         function_map[call.name] = call
 
 def build_query(line):
@@ -323,12 +321,12 @@ def process_line(line):
                 value = int(value)
                 t.enum_values.append(EnumValue(name, value))
     elif not "sys" in line:
-        #if "call " in line or "syscall " in line:
         if "call " in line in line:
-            build_call(line)
-        #elif "query " in line or "sysquery " in line:
+            build_call(call_definitions, pattern_call, line)
         elif "query " in line in line:
             build_query(line)
+        elif "event " in line in line:
+            build_call(event_definitions, pattern_event, line)
     #print("{} | {} {}".format(line, "query" in line, "syscall " in line))
 
 def get_types_export():
@@ -386,10 +384,10 @@ if Osi == nil then Osi = {{}} end
             events_str += '\t{}\n'.format(func.export())
 
         output_str = f"""---@meta
-        ---@diagnostics disable
-        if Osi == nil then Osi = {{}} end
-    {events_str}
-        """
+---@diagnostics disable
+
+if Osi == nil then Osi = {{}} end
+{events_str}"""
 
         export_file(output_path.parent.joinpath("Osi.Events.lua"), output_str)
 
@@ -425,7 +423,7 @@ if __name__ == "__main__":
     default_output_path = Path(script_dir.parent.joinpath("generated/Osi.lua"))
     default_divine_path = Path(os.environ.get("LSLIB_PATH", None))
 
-    debug = False
+    debug = True
     
     parser = argparse.ArgumentParser()
     parser.add_argument("--header", type=Path, required=not debug, help="The path to a story_header.div file.")
@@ -442,7 +440,8 @@ if __name__ == "__main__":
     args = parser.parse_args()
     
     if debug:
-        args.header = Path("G:/Modding/BG3/_Extracted/_Patches/Patch1/Mods/Gustav/Story/RawFiles/story_header.div", help="The path to a story_header.div file.")
+        #args.header = Path("G:/Modding/BG3/_Extracted/_Patches/Patch1/Mods/Gustav/Story/RawFiles/story_header.div")
+        args.header = Path(script_dir.parent.joinpath("references", "story_header.div"))
         args.osi = Path("G:/Modding/BG3/_Extracted/Mods/GustavDev/Story/story.div.osi")
     
     header_file:Path = args.header
