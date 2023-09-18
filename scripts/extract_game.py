@@ -95,7 +95,7 @@ class GameData:
     @staticmethod
     async def extract_pak(f:Path, divine:Path, output:Path)->bool:
         targs = [
-            str(divine.absolute()),
+            f"{str(divine.absolute())}",
             "-g bg3",
             f'-s "{f.absolute()}"',
             "-a extract-package",
