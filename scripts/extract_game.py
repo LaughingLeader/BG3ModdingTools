@@ -83,6 +83,12 @@ class GameData:
         Pak("day0").with_groups("Core", "Patch"),
         Pak("Patch0_Hotfix1").with_groups("Core", "Patch"),
         Pak("Patch0_Hotfix2").with_groups("Core", "Patch"),
+        Pak("Patch0_Hotfix3").with_groups("Core", "Patch"),
+        Pak("Patch0_Hotfix4").with_groups("Core", "Patch"),
+        Pak("Patch1").with_groups("Core", "Patch"),
+        Pak("Patch2").with_groups("Core", "Patch"),
+        Pak("Patch2_Hotfix1").with_groups("Core", "Patch"),
+        Pak("Patch2_Hotfix2").with_groups("Core", "Patch"),
         Pak("Localization\English").with_groups("Localization", "Core"),
     ]
 
@@ -140,7 +146,7 @@ async def run():
     parser.add_argument("-d", "--divine", type=Path, default=default_divine_path, help="The path to divine.exe.")
     parser.add_argument("-o", "--output", type=Path, default=default_extract_path, help="The output directory.")
     parser.add_argument("-s", "--specific", type=str, default="", help=f"Specific pak names to extract, separated with ;")
-    parser.add_argument("-g", "--groups", type=str, default="None", help=f"Groups to include, separated with ;. Defaults to None.")
+    parser.add_argument("-g", "--groups", type=str, default="None", help=f"Groups to limit extraction to, separated with ;. Defaults to None.")
     parser.add_argument("-n", "--ignore", type=str, default="Large", help=f"Groups to ignore, separated with ;. Defaults to Large.")
     parser.add_argument("--separate", action='store_true', help="If true, paks will be extracted into separate directories in the output directory, using the pak's name.")
     parser.add_argument("--configure", action='store_true', help="Store -i, -d, and -o as environmental variables %%BG3_PATH%%, %%LSLIB_PATH%%, and %%BG3_EXTRACTED%%.")
