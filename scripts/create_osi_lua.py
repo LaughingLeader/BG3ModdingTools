@@ -451,7 +451,7 @@ if Osi == nil then Osi = {{}} end
     queries_str = "\n".join([x.export() for x in get_sorted(query_definitions)])
     
     custom_aliases_str = "\n".join([dict_to_alias(k,v) for k,v in CustomAliases.items()])
-    aliases_str = f"\n--Custom Aliases (not builtin types)\n\n{custom_aliases_str}\n\n{aliases_str}"
+    aliases_str = f"\n--Custom Aliases (not generated with story_header.div)\n\n{custom_aliases_str}\n\n{aliases_str}"
 
     output_str = osi_template.format(types=types_str, aliases=aliases_str, enums=enums_str, queries=queries_str, calls=calls_str)
 
