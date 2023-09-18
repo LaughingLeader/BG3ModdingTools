@@ -95,12 +95,11 @@ CustomFunctionTypes = {
 }
 
 ManualOverloadFix = {
-    "Die": {1: ["target:GUIDSTRING"]}, # Generates as a0:ITEM
+    "Die": {3: ["target:GUIDSTRING", "deathType:DEATHTYPE", "generateTreasure:integer"]},
     "QuestUpdate": {2: ["questID:string", "stateID:string"]}, # Applies to all DB_Players
     "RequestActiveRoll": {5: ["roller:CHARACTER", "rollSubject:GUIDSTRING", "rollType:string", "difficultyClassID:DIFFICULTYCLASS", "event:string"]},
     "RequestPassiveRoll": {5: ["roller:CHARACTER", "rollSubject:GUIDSTRING", "rollType:string", "difficultyClassID:DIFFICULTYCLASS", "event:string"]},
     "Use": {3: ["character:CHARACTER", "item:ITEM", "event:string"]},
-    "Die": {3: ["target:GUIDSTRING", "deathType:DEATHTYPE", "generateTreasure:integer"]},
 }
 
 types:dict[int, 'OsirisType'] = {}
