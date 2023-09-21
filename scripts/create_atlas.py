@@ -230,7 +230,8 @@ def generate_texture(icons:list[Icon], texture_output:Path, texture_size:tuple[i
     texture_image.save(temp_texture_png)
     common.log(script_name, f"Converting texture to dds at '{texture_output}'.")
 
-    command = f"texconv -m {0 if do_mipmaps else 1} -ft DDS -f {dds_format} -nologo -timing -y -o \"{texture_output.parent}\" \"{temp_texture_png.absolute()}\""
+    # -m 1 disables mimaps
+    command = f"texconv -m {12 if do_mipmaps else 1} -ft DDS -f {dds_format} -nologo -timing -y -o \"{texture_output.parent}\" \"{temp_texture_png.absolute()}\""
     common.log(script_name, f"Running command '{command}'.")
     p = subprocess.run(command,
         shell=True,
