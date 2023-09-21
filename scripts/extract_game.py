@@ -30,7 +30,11 @@ if default_data_path:
 if default_divine_path:
     default_divine_path = Path(default_divine_path)
     if default_divine_path.is_dir():
-        default_divine_path = default_divine_path.joinpath("divine.exe")
+        exe_path = default_divine_path.joinpath("divine.exe")
+        if exe_path.exists:
+            default_divine_path = exe_path
+        elif default_divine_path.joinpath("Tools").exists():
+            default_divine_path = default_divine_path.joinpath("Tools/divine.exe")
 
 if default_extract_path:
     default_extract_path = Path(default_extract_path)
@@ -93,7 +97,7 @@ class GameData:
     ]
 
     @staticmethod
-    async def extract_pak(f:Path, divine:Path, output:Path)->bool:
+    async def extract_pak(f:Path, divine:Path, output:Path, debug:bool = False)->bool:
         targs = [
             f"{str(divine.absolute())}",
             "-g bg3",
@@ -103,6 +107,9 @@ class GameData:
             "-i pak"
         ]
         cmd = " ".join(targs)
+        if debug:
+            print(cmd)
+            return True
         proc = await asyncio.create_subprocess_shell(
             cmd,
             universal_newlines=False,
@@ -150,6 +157,7 @@ async def run():
     parser.add_argument("-n", "--ignore", type=str, default="Large", help=f"Groups to ignore, separated with ;. Defaults to Large.")
     parser.add_argument("--separate", action='store_true', help="If true, paks will be extracted into separate directories in the output directory, using the pak's name.")
     parser.add_argument("--configure", action='store_true', help="Store -i, -d, and -o as environmental variables %%BG3_PATH%%, %%LSLIB_PATH%%, and %%BG3_EXTRACTED%%.")
+    parser.add_argument("--debug", action='store_true', help="Test the script without actually extracting anything.")
 
     parser.description = "Extract BG3 game data paks in order to one folder, or individual folders."
     new_line = "\n    "
@@ -191,6 +199,7 @@ async def run():
     
     parser.epilog = f"Groups: {';'.join(sorted(all_groups.keys()))}"
     args = parser.parse_args()
+    debug = args.debug == True
 
     if args.configure:
         bg3_current = os.environ.get("BG3_PATH", None)
@@ -283,7 +292,7 @@ async def run():
                 pak_output = Path(output_dir)
                 if args.separate:
                     pak_output = pak_output.joinpath(pak.full_path.stem)
-                if await GameData.extract_pak(pak.full_path, divine_path, pak_output):
+                if await GameData.extract_pak(pak.full_path, divine_path, pak_output, debug):
                     successes = successes + 1
                 else:
                     errors = errors + 1
@@ -298,7 +307,8 @@ async def run():
             bar.text(msg)
             common.log(script_name, msg)
     else:
-        common.log(script_name, f"input({args.input}), output({args.output}), or divine({args.divine}) paths not set.\n Try --help for more info.", True)
+        print(f"input({args.input}), output({args.output}), or divine({args.divine}) paths not set.\n Try --help for more info.")
+        parser.print_help()
     
 def main():
     asyncio.run(run())
