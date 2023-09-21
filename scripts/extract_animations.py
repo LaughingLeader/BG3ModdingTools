@@ -4,6 +4,7 @@ import lxml.etree as ET
 import argparse
 from types import SimpleNamespace
 from dataclasses import dataclass,field
+import re
 
 import common
 script_name = Path(__file__).stem
@@ -11,6 +12,12 @@ common.clear_log(script_name)
 
 script_dir = Path(os.path.dirname(os.path.abspath(__file__)))
 os.chdir(script_dir)
+
+animation_keys:dict[str,int] = {}
+
+def increment_key(key:str):
+    current = animation_keys.get(key, 0)
+    animation_keys[key] = current + 1
 
 class AttributeMap(SimpleNamespace):
     def __init__(self, dictionary, default_empty:str = "", **kwargs):
@@ -86,7 +93,41 @@ class AnimationSet:
         if self.name == "" and other.name != "":
             self.name = other.name
 
+def find_animation(key:str, anim_set:AnimationSet):
+    for subset in anim_set.subsets:
+        for anim in subset.animations:
+            if anim.key_uuid == key:
+                return anim
+    for x in animation_sets.values():
+        for subset in x.subsets:
+            for anim in subset.animations:
+                if anim.key_uuid == key:
+                    return anim
+
+@dataclass
+class SpellAnimation:
+    spell:str
+    animations:list[str]
+    uuid_text:str
+    
+    def get_translated(self, set_uuid:str = "da29fce1-056a-4f86-b110-d61679c21238"):
+        names = []
+        anim_set = animation_sets.get(set_uuid)
+        for anim in self.animations:
+            res = find_animation(anim, anim_set)
+            if res:
+                names.append(res.get_resource_name())
+        return names
+    def __str__(self):
+        names = self.get_translated()
+        if names and len(names) > 0:
+            names = f"{';'.join(names)}"
+        else:
+            names = "UNKNOWN"
+        return f"{self.spell}\t{names}\t{self.uuid_text}"
+
 animation_sets:dict[str,AnimationSet] = {}
+spell_animations:dict[str,SpellAnimation] = {}
 
 node_animation_set_path = "region[@id='AnimationSetBank']/node[@id='AnimationSetBank']/children/node[@id='Resource']"
 node_animation_subset_path = ".//node[@id='AnimationSubSets']/children/node[@id='Object']"
@@ -262,6 +303,7 @@ def run(f_path:Path, preserve_empty:bool=True):
                 node_entry:ET._Element
                 for node_entry in parent_node_entry.iterfind(node_animation_set_entry_path, None):
                     attributes = get_attributes(node_entry)
+                    increment_key(attributes.MapKey)
                     anim = AnimationSetEntry(attributes.MapKey, attributes.ID)
                     animations.append(anim)
                     total = total + 1
@@ -270,7 +312,11 @@ def run(f_path:Path, preserve_empty:bool=True):
             anim_set.total = len(subsets)
     #print(f"Finished processing {f_path}")
 
-def finalize(output_dir:Path):
+def finalize(output_dir:Path, write_stats:bool = False):
+    common_keys = sorted([k for k,v in animation_keys.items() if v > 1])
+    print(f"{len(common_keys)} animation keys.")
+    output_dir.joinpath("AnimationKeys").with_suffix(".txt").write_text("\n".join(common_keys))
+    
     print(f"{len(animation_sets.values())} animation sets parsed.")
     for set in animation_sets.values():
         if set.total > 0:
@@ -284,7 +330,60 @@ def finalize(output_dir:Path):
                     lines.append(str(subset))
             output_file.parent.mkdir(parents=True, exist_ok=True)
             output_file.write_text(output_txt + "\n".join(lines), encoding="utf-8")
+            
+    if write_stats:
+        text = "ID\tAnimations\tKeys\n" + "\n".join([str(x) for x in sorted(spell_animations.values(), key=lambda entry: entry.spell)])
+        output_dir.joinpath("SpellAnimations").with_suffix(".tsv").write_text(text)
 
+entry_pattern = re.compile("new entry \"([^\"]+)\"", re.IGNORECASE)
+spell_anim_pattern = re.compile("data \"SpellAnimation\" \"([^\"]+)\"", re.IGNORECASE)
+using_pattern = re.compile("using \"([^\"]+)\"", re.IGNORECASE)
+
+inherited_entries:dict[str,str] = {}
+
+def get_parent_anims(current):
+    parent = spell_animations.get(current)
+    if parent != None:
+        parent_anims = spell_animations.get(parent)
+        if parent_anims != None:
+            return parent_anims
+        else:
+            next_parent = inherited_entries.get(parent)
+            return get_parent_anims(next_parent)
+
+def cleanup_inheritance():
+    for spell,parent in inherited_entries.items():
+        if spell_animations.get(spell) == None:
+            parent_anims = get_parent_anims(spell)
+            if parent_anims != None:
+                spell_animations[spell] = SpellAnimation(spell, parent_anims.animations, parent_anims.uuid_text)
+
+def translate_stats_file(f:Path):
+    with f.open("r") as data:
+        lines = data.readlines()
+        spell = ""
+        for line in lines:
+            if id_match := entry_pattern.match(line):
+                spell = id_match.group(1)
+            elif using := using_pattern.match(line):
+                inherited_entries[spell] = using.group(1)
+            elif anims_match := spell_anim_pattern.match(line):
+                if spell != "":
+                    anims = []
+                    uuid_text = anims_match.group(1)
+                    for group in uuid_text.split(";"): anims.extend(group.split(","))
+                    anims = [x for x in anims if x != ""]
+                    if len(anims) > 0:
+                        spell_animations[spell] = SpellAnimation(spell, anims, uuid_text)
+                    else:
+                        print(f"No animations for spell({spell})? ({uuid_text})")
+                    spell = ""
+
+def translate_stats_dir(directory:Path):
+    for x in directory.glob("Spell_*.txt"):
+        translate_stats_file(x)
+    cleanup_inheritance()
+    
 if __name__ == "__main__":
     default_output_path = Path(script_dir.joinpath("output\\animation_sets\\"))
     #default_animations_path = Path("G:/Modding/BG3/_Extracted/Public/Shared/Content/Assets/_merged.lsx")
@@ -298,6 +397,7 @@ if __name__ == "__main__":
     parser.add_argument("-o", "--output", type=Path, default=default_output_path, help="The output directory.")
     parser.add_argument("-d", "--directories", type=str, default=default_directories, help="Folders to parse lsx files for recursively")
     parser.add_argument("--noempty", action='store_true')
+    parser.add_argument("--nostats", action='store_true', help="Skip parsing stats folders to translate the SpellAnimation text.")
 
     parser.description = "Extract animation data from a path."
     new_line = "\n    "
@@ -308,7 +408,8 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
     
-    preserve_empty = args.noempty == False
+    preserve_empty = args.noempty != True
+    parse_stats = args.nostats != True
 
     directories_str:str = args.directories
     directories:list[Path] = []
@@ -323,5 +424,12 @@ if __name__ == "__main__":
         for f in files:
             run(f, preserve_empty)
         print(f"Finished processing {root}")
-    finalize(args.output)
+        if parse_stats:
+            stats_dir = root.parent.joinpath("Stats/Generated/Data")
+            if stats_dir.exists:
+                print(f"Translating SpellAnimations in {stats_dir}")
+                translate_stats_dir(stats_dir)
+            else:
+                print(f"Stats directory not found at {stats_dir}")
+    finalize(args.output, parse_stats)
     print(f"{len(animation_resources.keys())} resources parsed.")
