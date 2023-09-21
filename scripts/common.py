@@ -1,4 +1,5 @@
 from pathlib import Path
+from typing import Callable, Optional
 
 def trim(text:str)->str:
     return "\n".join([s for s in text.splitlines() if s.strip()])
@@ -22,13 +23,20 @@ def log(file_name:str, msg:str, do_print:bool = False):
         if len(data) > 0 :
             f.write("\n")
         f.write(msg)
+
+def init_log(file_name:str, do_print)->Callable[[str], None]:
+    clear_log(file_name)
+    return lambda msg: log(file_name,msg,do_print) # type: ignore 
         
 def import_lslib(dll_path:Path)->bool:
     try:
+        if dll_path.is_dir():
+            dll_path = dll_path.joinpath("LSLib.dll")
         import clr
         from System.Reflection import Assembly # type: ignore 
         Assembly.LoadFrom(str(dll_path.absolute()))
         clr.AddReference("LSLib") # type: ignore 
         return True
-    except:
+    except Exception as e:
+        print(e)
         return False
