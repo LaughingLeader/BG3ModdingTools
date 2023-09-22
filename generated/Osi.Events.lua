@@ -127,6 +127,12 @@ function Osi.CastSpellFailed(caster, spell, spellType, spellElement, storyAction
 ---@param storyActionID integer
 function Osi.CastedSpell(caster, spell, spellType, spellElement, storyActionID) end
 	
+---@param character CHARACTER
+function Osi.ChangeAppearanceCancelled(character) end
+	
+---@param character CHARACTER
+function Osi.ChangeAppearanceCompleted(character) end
+	
 function Osi.CharacterCreationFinished() end
 	
 function Osi.CharacterCreationStarted() end

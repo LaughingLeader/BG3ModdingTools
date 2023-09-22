@@ -151,8 +151,9 @@
 
 ---@alias TRADEMODE
 ---| `0` # Barter
----| `1` # Trade
+---| `3` # Trade
 ---| `2` # Donate
+---| `1` # Default
 
 --#endregion
 
@@ -1313,6 +1314,11 @@ function Osi.HasActiveStatus(target, status) end
 ---@param statusGroup string
 ---@return integer bool
 function Osi.HasActiveStatusWithGroup(target, statusGroup) end
+
+---@param character CHARACTER
+---@param tag TAG
+---@return integer bool
+function Osi.HasAppearanceVisualTag(character, tag) end
 
 ---@param target GUIDSTRING
 ---@param status string
@@ -2649,7 +2655,8 @@ function Osi.CrimeResetInterrogationForCriminals(crimeID, criminal1, criminal2, 
 ---@param x number
 ---@param y number
 ---@param z number
-function Osi.CrimeResumeWithPosition(crimeID, x, y, z) end
+---@param onlyInvestigate integer
+function Osi.CrimeResumeWithPosition(crimeID, x, y, z, onlyInvestigate) end
 
 ---@param crimeID integer
 ---@param npc GUIDSTRING
@@ -4298,6 +4305,9 @@ function Osi.StartActivity(activityId) end
 ---@param freeze integer
 ---@param startIndex integer
 function Osi.StartCameraSpline(spline, character, fadeTime, hideUI, freeze, startIndex) end
+
+---@param target GUIDSTRING
+function Osi.StartChangeAppearance(target) end
 
 function Osi.StartCharacterCreation() end
 
