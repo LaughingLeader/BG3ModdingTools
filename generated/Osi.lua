@@ -773,6 +773,11 @@ function Osi.GetBodyType(character, allowShapeshiftOverride) end
 ---@return string bookID
 function Osi.GetBookID(item) end
 
+---@param tags string
+---@param inventoryHolder GUIDSTRING
+---@return GUIDSTRING entity
+function Osi.GetByTagInInventory(tags, inventoryHolder) end
+
 ---@param item ITEM
 ---@return integer bool
 function Osi.GetCanInteract(item) end
@@ -1510,6 +1515,9 @@ function Osi.IsDestructible(item) end
 ---@param character CHARACTER
 ---@return integer bool
 function Osi.IsDialogueBlocked(character) end
+
+---@return integer isDropInCCActive
+function Osi.IsDropInCCActive() end
 
 ---@param entity GUIDSTRING
 ---@return integer bool
@@ -2449,6 +2457,9 @@ function Osi.CharacterStopCrime(player, crimeType, evidence) end
 ---@param player CHARACTER
 ---@param crime integer
 function Osi.CharacterStopCrimeWithID(player, crime) end
+
+---@param character CHARACTER
+function Osi.ClearCanOpenDoorsOverride(character) end
 
 ---@param object GUIDSTRING
 function Osi.ClearCustomMaterialOverrides(object) end
@@ -3860,6 +3871,10 @@ function Osi.SetCanInteract(item, bool) end
 ---@param enabled integer
 function Osi.SetCanJoinCombat(entity, enabled) end
 
+---@param character CHARACTER
+---@param canOpenDoors integer
+function Osi.SetCanOpenDoorsOverride(character, canOpenDoors) end
+
 ---@param item ITEM
 ---@param bool integer
 function Osi.SetCanPickUp(item, bool) end
@@ -4623,6 +4638,10 @@ function Osi.Unlock(item, character) end
 ---@param achievementID string
 ---@param character CHARACTER
 function Osi.UnlockAchievement(achievementID, character) end
+
+---@param character CHARACTER
+---@param dlc DLC
+function Osi.UnlockCustomDLC(character, dlc) end
 
 ---@param recipeID string
 function Osi.UnlockJournalRecipe(recipeID) end
