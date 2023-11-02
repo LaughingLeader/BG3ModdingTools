@@ -84,15 +84,6 @@ class GameData:
         Pak("Gustav_Textures").with_groups("Assets", "Textures"),
         Pak("Gustav_NavCloud").with_groups("Assets"),
         Pak("Gustav_Video").with_groups("Assets", "Large"),
-        Pak("day0").with_groups("Core", "Patch"),
-        Pak("Patch0_Hotfix1").with_groups("Core", "Patch"),
-        Pak("Patch0_Hotfix2").with_groups("Core", "Patch"),
-        Pak("Patch0_Hotfix3").with_groups("Core", "Patch"),
-        Pak("Patch0_Hotfix4").with_groups("Core", "Patch"),
-        Pak("Patch1").with_groups("Core", "Patch"),
-        Pak("Patch2").with_groups("Core", "Patch"),
-        Pak("Patch2_Hotfix1").with_groups("Core", "Patch"),
-        Pak("Patch2_Hotfix2").with_groups("Core", "Patch"),
         Pak("Localization\English").with_groups("Localization", "Core"),
     ]
 
