@@ -13,10 +13,11 @@ version_pattern = re.compile(r"(\d+)\.(\d+)\.(\d+)\.(\d+)")
 
 class Version():
     def __init__(self):
-        self.major = 0
-        self.minor = 0
-        self.revision = 0
-        self.build = 0
+        self.major:int64 = 0
+        self.minor:int64 = 0
+        self.revision:int64 = 0
+        self.build:int64 = 0
+        self.full:int64 = 0
         
     @property
     def version_str(self)->str:
@@ -33,6 +34,7 @@ class Version():
         return False
     
     def parse_integer(self, v:int64)->bool:
+        self.full = v
         if v is not None:
             self.major = v >> 55
             self.minor = (v >> 47) & 0xFF
@@ -47,7 +49,7 @@ class Version():
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Generate or convert version numbers to strings and back.')
-    parser.add_argument("version", nargs="?", default="1.0.0.0")
+    parser.add_argument("version", nargs="?", default="1.0.0.0", help="A string version like 1.0.0.0, or an int64 like 36028797018963968")
     args = parser.parse_args()
 
     version = Version()
