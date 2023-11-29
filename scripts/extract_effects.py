@@ -23,7 +23,7 @@ class Effect:
         return f"{self.name}\t{self.uuid}\t{self.filepath}"
 
 default_output_path = Path(script_dir.joinpath("output\\effects\\"))
-default_divine_path = Path(os.environ.get("LSLIB_PATH", None))
+default_divine_path = common.get_lslib_path()
 
 effects:dict[str,Effect] = {}
 

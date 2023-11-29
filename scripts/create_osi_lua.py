@@ -470,7 +470,7 @@ if Osi == nil then Osi = {{}} end
 
         export_file(output_path.parent.joinpath("Osi.Events.lua"), output_str)
         
-        arity_entries = "\n".join([f"{x.name} = {len(x.parameters)}," for x in events])
+        arity_entries = "\n".join([f"\t{x.name} = {len(x.parameters)}," for x in events])
         event_arity_output = f"""local EventArity = {{
 {arity_entries}
 }}"""
@@ -506,7 +506,7 @@ def run(header_file:Path, output_path:Path, osi_file:Path, lslib_dll:Path, do_so
 
 if __name__ == "__main__":
     default_output_path = Path(script_dir.parent.joinpath("generated/Osi.lua"))
-    default_divine_path = Path(os.environ.get("LSLIB_PATH", None))
+    default_divine_path = common.get_lslib_path()
 
     debug = True
     

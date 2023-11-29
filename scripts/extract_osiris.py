@@ -176,7 +176,7 @@ def run(target_file:Path, lslib_dll:Path, output_dir:Path = None, output_txt:boo
 
 if __name__ == "__main__":
     default_output_path = Path(script_dir.joinpath("output\\osiris\\"))
-    default_divine_path = Path(os.environ.get("LSLIB_PATH", None))
+    default_divine_path = common.get_lslib_path()
 
     ## cli args here
     parser = argparse.ArgumentParser()

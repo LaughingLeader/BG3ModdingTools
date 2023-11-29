@@ -15,7 +15,7 @@ all_groups:dict[str,int] = {}
 working_dir = Path.cwd()
 
 default_data_path = os.environ.get("BG3_PATH", None)
-default_divine_path = os.environ.get("LSLIB_PATH", None)
+default_divine_path = common.get_lslib_path(True)
 #default_extract_path = working_dir.joinpath("/GameData_Extracted_{}".format(datetime.datetime.now().timestamp()))
 default_extract_path = os.environ.get("BG3_EXTRACTED", None)
 
@@ -26,15 +26,6 @@ if default_data_path:
             default_data_path = default_data_path.joinpath("Data")
     else:
         default_data_path = default_data_path.parent
-
-if default_divine_path:
-    default_divine_path = Path(default_divine_path)
-    if default_divine_path.is_dir():
-        exe_path = default_divine_path.joinpath("divine.exe")
-        if exe_path.exists:
-            default_divine_path = exe_path
-        elif default_divine_path.joinpath("Tools").exists():
-            default_divine_path = default_divine_path.joinpath("Tools/divine.exe")
 
 if default_extract_path:
     default_extract_path = Path(default_extract_path)

@@ -10,8 +10,7 @@ script_dir = Path(os.path.dirname(os.path.abspath(__file__)))
 os.chdir(script_dir)
 
 default_output_path = Path(script_dir.joinpath("output\\osiris\\"))
-
-default_divine_path = Path(os.environ.get("LSLIB_PATH", None))
+default_divine_path = common.get_lslib_path()
 
 ## cli args here
 parser = argparse.ArgumentParser()

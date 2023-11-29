@@ -20,10 +20,10 @@ class ModInfo:
 	version:Version
 
 	def __str__(self) -> str:
-		return f"[{self.name}] Version({self.version.version_str})[{self.version.version_int}] UUID({self.uuid})"
+		return f"[{self.name}] Version({self.version.version_str})[{self.version.full}] UUID({self.uuid})"
 
 default_output_path = Path(script_dir.joinpath("output\\meta\\"))
-default_divine_path = Path(os.environ.get("LSLIB_PATH", None))
+default_divine_path = common.get_lslib_path()
 
 ## cli args here
 parser = argparse.ArgumentParser()

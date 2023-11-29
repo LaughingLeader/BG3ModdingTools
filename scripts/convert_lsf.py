@@ -11,7 +11,7 @@ script_dir = Path(os.path.dirname(os.path.abspath(__file__)))
 os.chdir(script_dir)
 
 default_output_path = Path(script_dir.joinpath("output\\lsf\\"))
-default_divine_path = Path(os.environ.get("LSLIB_PATH", None))
+default_divine_path = common.get_lslib_path()
 
 def on_error(file, e):
     log(f"Error converting file '{file}':\n{e}")
@@ -27,7 +27,7 @@ def run(lslib_dll:Path, input_file:Path, output_file:Path = None, recursive:bool
         clr.AddReference("LSLib") # type: ignore 
 
         from LSLib.LS import ResourceUtils, ResourceConversionParameters, ResourceLoadParameters # type: ignore 
-        from LSLib.LS.Enums import Game, ResourceFormat # type: ignore 
+        from LSLib.LS.Enums import Game, ResourceFormat # type: ignore
         
         load_params = ResourceLoadParameters.FromGameVersion(Game.BaldursGate3)
         conversion_params = ResourceConversionParameters.FromGameVersion(Game.BaldursGate3)

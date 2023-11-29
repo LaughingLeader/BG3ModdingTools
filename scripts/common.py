@@ -1,5 +1,6 @@
 from pathlib import Path
 from typing import Callable, Optional
+import os
 
 def trim(text:str)->str:
     return "\n".join([s for s in text.splitlines() if s.strip()])
@@ -40,3 +41,19 @@ def import_lslib(dll_path:Path)->bool:
     except Exception as e:
         print(e)
         return False
+    
+def get_lslib_path(get_divine:bool = False, return_none:bool = False)->Path:
+    result = os.environ.get("LSLIB_PATH", None)
+
+    if result:
+        result = Path(result)
+        if get_divine:
+            if result.is_dir():
+                exe_path = result.joinpath("divine.exe")
+                if exe_path.exists:
+                    result = exe_path
+                elif result.joinpath("Tools").exists():
+                    result = result.joinpath("Tools/divine.exe")
+                return result
+    if return_none: return None
+    return Path("")
