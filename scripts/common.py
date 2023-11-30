@@ -44,7 +44,6 @@ def import_lslib(dll_path:Path)->bool:
     
 def get_lslib_path(get_divine:bool = False, return_none:bool = False)->Path:
     result = os.environ.get("LSLIB_PATH", None)
-
     if result:
         result = Path(result)
         if get_divine:
@@ -54,6 +53,6 @@ def get_lslib_path(get_divine:bool = False, return_none:bool = False)->Path:
                     result = exe_path
                 elif result.joinpath("Tools").exists():
                     result = result.joinpath("Tools/divine.exe")
-                return result
+        return result
     if return_none: return None
     return Path("")
