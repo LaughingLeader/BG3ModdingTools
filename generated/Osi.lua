@@ -210,6 +210,11 @@ function Osi.CanMove(character) end
 ---@return integer bool
 function Osi.CanSee(source, target) end
 
+---@param source GUIDSTRING
+---@param target GUIDSTRING
+---@return integer bool
+function Osi.CanSeeCached(source, target) end
+
 ---@param character CHARACTER
 ---@param spellID string
 ---@return integer bool
@@ -1340,6 +1345,9 @@ function Osi.HasAppliedStatusOfType(target, statusType) end
 ---@return integer bool
 function Osi.HasAppliedStatusWithGroup(target, statusGroup) end
 
+---@return integer bool
+function Osi.HasBeenDishonoured() end
+
 ---@param source GUIDSTRING
 ---@param target GUIDSTRING
 ---@return integer bool
@@ -2467,6 +2475,10 @@ function Osi.ClearCustomMaterialOverrides(object) end
 ---@param object GUIDSTRING
 function Osi.ClearCustomMaterialResourceOverrides(object) end
 
+---@param target GUIDSTRING
+---@param tag TAG
+function Osi.ClearDialogTag(target, tag) end
+
 ---@overload fun(flag:FLAG)
 ---@overload fun(flag:FLAG, object:GUIDSTRING)
 ---@overload fun(flag:FLAG, object:GUIDSTRING, dialogInstance:integer)
@@ -2681,6 +2693,9 @@ function Osi.CrimeSuspend(crimeID) end
 ---@param includingNearbyOnGround integer
 ---@param target GUIDSTRING
 function Osi.CrimeTransferEvidenceTo(crimeID, criminal, includingNearbyOnGround, target) end
+
+---@param crimeID integer
+function Osi.DEV_CrimeForceResolve(crimeID) end
 
 ---@param object GUIDSTRING
 ---@param config string
