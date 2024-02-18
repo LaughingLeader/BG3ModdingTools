@@ -529,7 +529,7 @@ if __name__ == "__main__":
         #args.header = Path("G:/Modding/BG3/_Extracted/_Patches/Patch1/Mods/Gustav/Story/RawFiles/story_header.div")
         args.sort = True
         args.header = Path(script_dir.parent.joinpath("references", "story_header.div"))
-        args.osi = Path("G:/Modding/BG3/_Extracted/Mods/GustavDev/Story/story.div.osi")
+        args.osi = Path(script_dir.parent.joinpath("references", "story.div.osi"))
     
     header_file:Path = args.header
     output_path:Path = args.output
