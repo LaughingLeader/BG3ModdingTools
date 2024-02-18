@@ -49,7 +49,7 @@ def run(target_file:Path, lslib_dll:Path, output_dir:Path = None, output_txt:boo
     clr.AddReference("LSLib") # type: ignore 
     clr.AddReference("System") # type: ignore
 
-    from LSLib.LS import PackageReader, Package, AbstractFileInfo, LSFReader # type: ignore 
+    from LSLib.LS import PackageReader, LSFReader # type: ignore 
     from LSLib.LS.Story import StoryDebugExportVisitor, StoryReader # type: ignore 
     from System.IO import FileStream, MemoryStream, FileMode, FileAccess, FileShare # type: ignore 
     from System import Byte, Array # type: ignore 
