@@ -11,12 +11,13 @@ os.chdir(script_dir)
 
 default_output_path = Path(script_dir.joinpath("output\\osiris\\"))
 default_divine_path = common.get_lslib_path()
+default_input_path = script_dir.parent.joinpath("references\\story.div.osi")
 
 ## cli args here
 parser = argparse.ArgumentParser()
 parser.add_argument("-d", "--divine", type=Path, default=default_divine_path, help="The path to divine.exe.")
 parser.add_argument("-o", "--output", type=Path, default=default_output_path, help="The output directory.")
-parser.add_argument("-f", "--file", type=Path, required=True, help="The path to a save file.")
+parser.add_argument("-f", "--file", type=Path, default=default_input_path, help="The path to a save file (lsv) or story.div.osi")
 
 parser.description = "Extract Osiris databases from a save file using lslib."
 new_line = "\n    "
@@ -91,11 +92,9 @@ if target_file.exists():
 
         input_file:Path = args.file
 
-        from LSLib.LS import PackageReader, Package, AbstractFileInfo, LSFReader # type: ignore 
-        from LSLib.LS.Story import StoryDebugExportVisitor, StoryReader, Value # type: ignore 
-        from System.IO import FileStream, MemoryStream, FileMode, FileAccess, FileShare # type: ignore 
-        from System import Byte, Array # type: ignore 
-        from System.Text import Encoding # type: ignore 
+        from LSLib.LS import PackageReader # type: ignore 
+        from LSLib.LS.Story import StoryReader # type: ignore 
+        from System.IO import FileStream, FileMode, FileShare, FileAccess # type: ignore
         
         def value_to_str(story, value):
             builtinTypeId = story.FindBuiltinTypeId(value.TypeId)
@@ -112,16 +111,14 @@ if target_file.exists():
                 owner = db.OwnerNode
                 if owner != None and len(owner.Name) > 0:
                     #name = len(owner.Name) > 0 and f"{owner.Name}" or f"<{owner.TypeName()}>"
-                
                     for fact in db.Facts:
-                       
                         fact_data = [value_to_str(story, x) for x in fact.Columns]
                         fact_str = ", ".join(fact_data)
                         entries.append(f"{owner.Name}({fact_str})")
             output_file = output_dir.joinpath("DatabaseEntries.txt")
             output_file.write_text("\n".join(sorted(entries)))
             print(f"Saved database entries to {output_file}")
-            
+
         if target_file.suffix == ".lsv":
             package_reader = PackageReader(str(target_file.absolute()))
             package = package_reader.Read()
@@ -136,7 +133,13 @@ if target_file.exists():
             try:
                 load_story(res_stream)
             finally:
-                story_bin.ReleaseStream()
+                story_bin.ReleaseStream()            
+        elif target_file.suffix == ".osi":
+            fs = FileStream(str(target_file.absolute()), FileMode.Open, FileAccess.Read, FileShare.Read)
+            try:
+                load_story(fs)
+            finally:
+                if fs != None: fs.Dispose()
     else:
         raise FileNotFoundError("Failed to find LSLib.dll in the provided divine path.")
 else:
