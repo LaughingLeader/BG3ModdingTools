@@ -18,22 +18,35 @@ class OsirisEntry:
     return_params:list[str] = field(default_factory=list)
     
     def __str__(self) -> str:
-        return_params_str = ""
-        if len(self.return_params) > 0:
-            return_params_str = ":" + ", ".join(self.return_params)
         params_str = ""
-        if len(self.params) > 0:
-            params_str = ', '.join(self.params)
-        return f"{self.name}{params_str}{return_params_str}"
+        param_total = len(self.params)
+        return_total = len(self.return_params)
+        if param_total > 0:
+            params_str = ", ".join(self.params)
+        return_params_str = ""
+        if return_total > 0:
+            return_params_str = ", ".join(self.return_params)
+            if param_total > 0: 
+                return_params_str = ", " + return_params_str 
+        combined_params = params_str + return_params_str
+        if combined_params != "":
+            combined_params = f"({combined_params})"
+        return f"{self.name}{combined_params}"
+    
+    def __repr__(self): return self.__str__()
+
+class StrList(list):
+    def export(self):
+        return "\n".join([str(x) for x in self])
 
 @dataclass
 class OsirisResults:
-    events:list[OsirisEntry]
-    calls:list[OsirisEntry]
-    queries:list[OsirisEntry]
-    user_queries:list[OsirisEntry]
-    procs:list[OsirisEntry]
-    databases:list[OsirisEntry]
+    events:StrList[OsirisEntry]
+    calls:StrList[OsirisEntry]
+    queries:StrList[OsirisEntry]
+    user_queries:StrList[OsirisEntry]
+    procs:StrList[OsirisEntry]
+    databases:StrList[OsirisEntry]
 
 def run(target_file:Path, lslib_dll:Path, output_dir:Path = None, output_txt:bool = True)->OsirisResults:
     if not target_file.exists():
@@ -62,8 +75,8 @@ def run(target_file:Path, lslib_dll:Path, output_dir:Path = None, output_txt:boo
         functions:dict[str,dict[str,str]] = entries["functions"]
 
         type_dict:dict[int,str] = {}
-        for type,data in types.items():
-            type_dict[int(type)] = data['name']
+        for otype,data in types.items():
+            type_dict[int(otype)] = data['name']
         type_dict = dict(sorted(type_dict.items()))
         
         def get_query_param(name, index, typeId, bitmask):
@@ -114,20 +127,21 @@ def run(target_file:Path, lslib_dll:Path, output_dir:Path = None, output_txt:boo
         
         def get_key(x): return x.name
         
-        databases = sorted(databases, key=get_key)
-        events = sorted(events, key=get_key)
-        calls = sorted(calls, key=get_key)
-        queries = sorted(queries, key=get_key)
-        procs = sorted(procs, key=get_key)
-        user_queries = sorted(user_queries, key=get_key)
+        databases = StrList(sorted(databases, key=get_key))
+        events = StrList(sorted(events, key=get_key))
+        calls = StrList(sorted(calls, key=get_key))
+        queries = StrList(sorted(queries, key=get_key))
+        procs = StrList(sorted(procs, key=get_key))
+        user_queries = StrList(sorted(user_queries, key=get_key))
+
         if output_txt:
             output_dir.joinpath("Types.tsv").write_text("\n".join([f"{k}\t{v}" for k,v in type_dict.items()]))
-            output_dir.joinpath("Databases.txt").write_text("\n".join(databases))
-            output_dir.joinpath("Events.txt").write_text("\n".join(events))
-            output_dir.joinpath("Calls.txt").write_text("\n".join(calls))
-            output_dir.joinpath("Queries.txt").write_text("\n".join(queries))
-            output_dir.joinpath("Procs.txt").write_text("\n".join(procs))
-            output_dir.joinpath("OsirisQueries.txt").write_text("\n".join(user_queries))
+            output_dir.joinpath("Databases.txt").write_text(databases.export())
+            output_dir.joinpath("Events.txt").write_text(events.export())
+            output_dir.joinpath("Calls.txt").write_text(calls.export())
+            output_dir.joinpath("Queries.txt").write_text(queries.export())
+            output_dir.joinpath("Procs.txt").write_text(procs.export())
+            output_dir.joinpath("OsirisQueries.txt").write_text(user_queries.export())
         return OsirisResults(events, calls, queries, user_queries, procs, databases)
 
     def load_story(stream)->OsirisResults:
@@ -175,14 +189,15 @@ def run(target_file:Path, lslib_dll:Path, output_dir:Path = None, output_txt:boo
             return result
 
 if __name__ == "__main__":
-    default_output_path = Path(script_dir.joinpath("output\\osiris\\"))
+    default_output_path = script_dir.joinpath("output\\osiris\\")
     default_divine_path = common.get_lslib_path()
+    default_input_path = script_dir.parent.joinpath("references\\story.div.osi")
 
     ## cli args here
     parser = argparse.ArgumentParser()
     parser.add_argument("-d", "--divine", type=Path, default=default_divine_path, help="The path to divine.exe.")
     parser.add_argument("-o", "--output", type=Path, default=default_output_path, help="The output directory.")
-    parser.add_argument("-f", "--file", type=Path, required=True, help="The path to a save file or story.div.osi to extract Osiris data from.")
+    parser.add_argument("-f", "--file", type=Path, default=default_input_path, help="The path to a save file or story.div.osi to extract Osiris data from.")
 
     parser.description = "Extract Osiris calls/queries/procs etc from a save file, or a story.div.osi, using lslib."
     new_line = "\n    "
