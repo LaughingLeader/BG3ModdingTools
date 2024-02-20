@@ -23,7 +23,7 @@ parser.description = "Extract Osiris databases from a save file using lslib."
 new_line = "\n    "
 parser.usage = f"""
 Example usage:
-python extract_osiris.py -d "C:/lslib/divine.exe" -o "C:/Modding/BG3/OsirisInfo" -f "%%LOCALAPPDATA%%/Larian Studios/Baldur's Gate 3/PlayerProfiles/Public/Savegames/Story/Tav-24112318724__Quicksave1/Quicksave1.lsv"
+python extract_database_entries.py -d "C:/lslib/divine.exe" -o "C:/Modding/BG3/OsirisInfo" -f "%%LOCALAPPDATA%%/Larian Studios/Baldur's Gate 3/PlayerProfiles/Public/Savegames/Story/Tav-24112318724__Quicksave1/Quicksave1.lsv"
 """
 
 args = parser.parse_args()
