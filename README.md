@@ -38,7 +38,7 @@ A collection of python scripts are within the scripts folder, allowing various u
 ### Installation  
 #### Requirements  
 
-* [Python](https://www.python.org/downloads/) (3.10 or higher)
+* [Python](https://www.python.org/downloads/) (3.10 or higher, though higher versions may have breaking changes)
 * [LSLib](https://github.com/Norbyte/lslib/releases/latest)
 * [ImageMagick](https://imagemagick.org/script/download.php) (Required if you want to use `convert_images.py`)
 
