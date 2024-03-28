@@ -58,7 +58,6 @@ def run(target_file:Path, lslib_dll:Path, output_dir:Path = None, output_txt:boo
 
     import pythonnet
     pythonnet.load('coreclr')
-
     import clr
     from System.Reflection import Assembly # type: ignore 
     Assembly.LoadFrom(str(lslib_dll.absolute()))

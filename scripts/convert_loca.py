@@ -35,6 +35,8 @@ if target_file.exists():
     lslib_dll:Path = args.divine.is_dir() and args.divine.joinpath("LSLib.dll") or args.divine.parent.joinpath("LSLib.dll")
 
     if lslib_dll.exists():
+        import pythonnet
+        pythonnet.load('coreclr')
         import clr
         from System.Reflection import Assembly # type: ignore 
         Assembly.LoadFrom(str(lslib_dll.absolute()))
