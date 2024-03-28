@@ -128,6 +128,7 @@ if target_file.exists():
             helper = SavegameHelpers(str(target_file))
             story = helper.LoadStory()
             load_story(story)
+            helper.Dispose()
         elif target_file.suffix == ".osi":
             fs = FileStream(str(target_file.absolute()), FileMode.Open, FileAccess.Read, FileShare.Read)
             try:
