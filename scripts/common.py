@@ -33,6 +33,8 @@ def import_lslib(dll_path:Path)->bool:
     try:
         if dll_path.is_dir():
             dll_path = dll_path.joinpath("LSLib.dll")
+        import pythonnet
+        pythonnet.load('coreclr')
         import clr
         from System.Reflection import Assembly # type: ignore 
         Assembly.LoadFrom(str(dll_path.absolute()))
