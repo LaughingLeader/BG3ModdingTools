@@ -84,6 +84,8 @@ if target_file.exists():
         output_dir:Path = args.output
         output_dir.mkdir(exist_ok=True, parents=True)
         
+        import pythonnet
+        pythonnet.load('coreclr')
         import clr
         from System.Reflection import Assembly # type: ignore 
         Assembly.LoadFrom(str(lslib_dll.absolute()))
@@ -92,7 +94,7 @@ if target_file.exists():
 
         input_file:Path = args.file
 
-        from LSLib.LS import PackageReader # type: ignore 
+        from LSLib.LS.Save import SavegameHelpers # type: ignore 
         from LSLib.LS.Story import StoryReader # type: ignore 
         from System.IO import FileStream, FileMode, FileShare, FileAccess # type: ignore
         
@@ -103,9 +105,7 @@ if target_file.exists():
                 return f'"{value}"'
             return str(value)
                 
-        def load_story(stream):
-            reader = StoryReader()
-            story = reader.Read(stream)
+        def load_story(story):
             entries = []
             for db in story.Databases.Values:
                 owner = db.OwnerNode
@@ -119,25 +119,20 @@ if target_file.exists():
             output_file.write_text("\n".join(sorted(entries)))
             print(f"Saved database entries to {output_file}")
 
+        def load_story_from_stream(stream):
+            reader = StoryReader()
+            story = reader.Read(stream)
+            load_story(story)
+
         if target_file.suffix == ".lsv":
-            package_reader = PackageReader(str(target_file.absolute()))
-            package = package_reader.Read()
-            story_bin = None
-            for p in package.Files:
-                if str.lower(p.Name) == "storysave.bin":
-                    story_bin = p
-                    break
-            if story_bin is None:
-                raise Exception("Failed to find storysave.bin in save file.")
-            res_stream = story_bin.MakeStream()
-            try:
-                load_story(res_stream)
-            finally:
-                story_bin.ReleaseStream()            
+            helper = SavegameHelpers(str(target_file))
+            story = helper.LoadStory()
+            load_story(story)
+            helper.Dispose()
         elif target_file.suffix == ".osi":
             fs = FileStream(str(target_file.absolute()), FileMode.Open, FileAccess.Read, FileShare.Read)
             try:
-                load_story(fs)
+                load_story_from_stream(fs)
             finally:
                 if fs != None: fs.Dispose()
     else:

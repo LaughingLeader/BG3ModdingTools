@@ -21,6 +21,8 @@ def on_progress(status, numerator, denominator):
 
 def run(lslib_dll:Path, input_file:Path, output_file:Path = None, recursive:bool = False, in_type:str = ".lsf", out_type:str = ".lsx"):
     if lslib_dll.exists():
+        import pythonnet
+        pythonnet.load('coreclr')
         import clr
         from System.Reflection import Assembly # type: ignore 
         Assembly.LoadFrom(str(lslib_dll.absolute()))

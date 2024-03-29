@@ -56,16 +56,17 @@ def run(target_file:Path, lslib_dll:Path, output_dir:Path = None, output_txt:boo
     if output_dir:
         output_dir.mkdir(exist_ok=True, parents=True)
 
+    import pythonnet
+    pythonnet.load('coreclr')
     import clr
     from System.Reflection import Assembly # type: ignore 
     Assembly.LoadFrom(str(lslib_dll.absolute()))
     clr.AddReference("LSLib") # type: ignore 
     clr.AddReference("System") # type: ignore
 
-    from LSLib.LS import PackageReader, LSFReader # type: ignore 
     from LSLib.LS.Story import StoryDebugExportVisitor, StoryReader # type: ignore 
+    from LSLib.LS.Save import SavegameHelpers # type: ignore 
     from System.IO import FileStream, MemoryStream, FileMode, FileAccess, FileShare # type: ignore 
-    from System import Byte, Array # type: ignore 
     from System.Text import Encoding # type: ignore 
 
     def parse_data(result:str):
@@ -144,45 +145,29 @@ def run(target_file:Path, lslib_dll:Path, output_dir:Path = None, output_txt:boo
             output_dir.joinpath("OsirisQueries.txt").write_text(user_queries.export())
         return OsirisResults(events, calls, queries, user_queries, procs, databases)
 
-    def load_story(stream)->OsirisResults:
-        reader = StoryReader()
-        story = reader.Read(stream)
+    def load_story(story)->OsirisResults:
         data_stream = MemoryStream(4096)
         sev = StoryDebugExportVisitor(data_stream)
         sev.Visit(story)
         result = Encoding.UTF8.GetString(data_stream.ToArray())
         data_stream.Dispose()
         return parse_data(result)
+
+    def load_story_from_stream(stream)->OsirisResults:
+        reader = StoryReader()
+        story = reader.Read(stream)
+        return load_story(story)
         
     if target_file.suffix == ".osi":
         fs = FileStream(str(target_file.absolute()), FileMode.Open, FileAccess.Read, FileShare.Read)
-        result = load_story(fs)
+        result = load_story_from_stream(fs)
         fs.Dispose()
         return result
     elif target_file.suffix == ".lsv":
-        package_reader = PackageReader(str(target_file.absolute()))
-        package = package_reader.Read()
-        abstract_file_info = None
-        for p in package.Files:
-            if str.lower(p.Name) == "globals.lsf":
-                abstract_file_info = p
-                break
-        if abstract_file_info is None:
-            raise Exception("Failed to find globals.lsf in save file.")
-        res_stream = abstract_file_info.MakeStream()
-        resource = None
-        try:
-            res_reader = LSFReader(res_stream)
-            resource = res_reader.Read()
-            res_reader.Dispose()
-        finally:
-            abstract_file_info.ReleaseStream()
-        if resource:
-            story_node = resource.Regions["Story"].Children["Story"][0]
-            story_stream = MemoryStream(Array[Byte](story_node.Attributes["Story"].Value))
-            result = load_story(story_stream)
-            story_stream.Dispose()
-            return result
+        helper = SavegameHelpers(str(target_file))
+        story = helper.LoadStory()
+        load_story(story)
+        helper.Dispose()
     elif target_file.suffix == ".json":
         with target_file.open("r", encoding="utf-8") as f:
             result = parse_data(f.read())
