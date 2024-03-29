@@ -28,9 +28,31 @@
 			}
 		},
 		{
+			"label": "Set Mod Version",
+			"type": "shell",
+			"command": "python",
+			"options": {
+				"cwd": "${workspaceFolder}\\scripts",
+			},
+			"args": [
+				"${workspaceFolder}\\scripts\\version.py",
+				"-v",
+				"${input:ModVer}",
+				"-f",
+				"${workspaceFolder}",
+			],
+			"presentation": {
+				"reveal": "silent"
+			},
+			"problemMatcher": []
+		},
+		{
 			"label": "Create Pak",
 			"type": "shell",
 			"command": "${input:divinepath}",
+			"dependsOn": [
+				"Set Mod Version"
+			],
 			"args": [
 				"-g",
 				"bg3",
@@ -60,6 +82,12 @@
 			"id": "moduuid",
 			"type": "promptString",
 			"description": "The mod's UUID."
+		},
+		{
+			"id": "ModVer",
+			"type": "promptString",
+			"description": "A string version like 1.0.0.0, or an int64 like 36028797018963968",
+			"default": "2.1.6.0"
 		}
 	]
 }
