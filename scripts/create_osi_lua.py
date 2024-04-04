@@ -209,7 +209,7 @@ class TupleFuncVariable(FuncVariable):
         
     def export_type(self, func_name:str = "", type_override:OsirisType = None):
         if type_override:
-            raise "No type override on TupleFuncVariable plz"
+            raise ValueError("type_override is unsupported for this type")
         t = "{"
         for i in range(len(self.type)):
             t += "{}[{}]: {}".format("" if i == 0 else ", ", i+1, self.type[i].export_type(func_name))
