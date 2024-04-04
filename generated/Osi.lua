@@ -2210,6 +2210,8 @@ function Osi.ActivatePersistentLevelTemplate(levelTemplate) end
 ---@param levelTemplate LEVELTEMPLATE
 function Osi.ActivatePersistentLevelTemplateWithCombat(levelTemplate) end
 
+---@overload fun(player:CHARACTER, trader:CHARACTER, canSell:integer)
+---@overload fun(player:CHARACTER, trader:CHARACTER, canSell:integer, tradeMode:TRADEMODE)
 ---@param player CHARACTER
 ---@param trader CHARACTER
 ---@param canSell integer
@@ -2287,6 +2289,8 @@ function Osi.AddPassive(entity, passiveID) end
 ---@param tag TAG
 function Osi.AddPreferredAiTargetTag(character, tag) end
 
+---@overload fun(character:CHARACTER, spell:string)
+---@overload fun(character:CHARACTER, spell:string, showNotification:integer)
 ---@param character CHARACTER
 ---@param spell string
 ---@param showNotification integer
@@ -2321,6 +2325,7 @@ function Osi.AiRemoveInterestingItem(character, item) end
 ---@param isAllowed integer
 function Osi.AllowNewPlayers(isAllowed) end
 
+---@overload fun(character:CHARACTER, target:GUIDSTRING, playSpawn:integer, customSpawnAnimation:ANIMATION, appearedEvent:string)
 ---@param character CHARACTER
 ---@param target GUIDSTRING
 ---@param playSpawn integer
@@ -2329,6 +2334,7 @@ function Osi.AllowNewPlayers(isAllowed) end
 ---@param preventTeleportOnFailure integer
 function Osi.AppearAt(character, target, playSpawn, customSpawnAnimation, appearedEvent, preventTeleportOnFailure) end
 
+---@overload fun(character:CHARACTER, x:number, y:number, z:number, playSpawn:integer, customSpawnAnimation:ANIMATION, appearedEvent:string)
 ---@param character CHARACTER
 ---@param x number
 ---@param y number
@@ -2339,6 +2345,7 @@ function Osi.AppearAt(character, target, playSpawn, customSpawnAnimation, appear
 ---@param preventTeleportOnFailure integer
 function Osi.AppearAtPosition(character, x, y, z, playSpawn, customSpawnAnimation, appearedEvent, preventTeleportOnFailure) end
 
+---@overload fun(character:CHARACTER, target:CHARACTER, directionFrom:GUIDSTRING, playSpawn:integer, customSpawnAnimation:ANIMATION, appearedEvent:string)
 ---@param character CHARACTER
 ---@param target CHARACTER
 ---@param directionFrom GUIDSTRING
@@ -2348,6 +2355,7 @@ function Osi.AppearAtPosition(character, x, y, z, playSpawn, customSpawnAnimatio
 ---@param preventTeleportOnFailure integer
 function Osi.AppearOnTrailOutOfSightTo(character, target, directionFrom, playSpawn, customSpawnAnimation, appearedEvent, preventTeleportOnFailure) end
 
+---@overload fun(character:CHARACTER, target:GUIDSTRING, directionFrom:GUIDSTRING, playSpawn:integer, customSpawnAnimation:ANIMATION, appearedEvent:string)
 ---@param character CHARACTER
 ---@param target GUIDSTRING
 ---@param directionFrom GUIDSTRING
@@ -2357,6 +2365,7 @@ function Osi.AppearOnTrailOutOfSightTo(character, target, directionFrom, playSpa
 ---@param preventTeleportOnFailure integer
 function Osi.AppearOutOfSightTo(character, target, directionFrom, playSpawn, customSpawnAnimation, appearedEvent, preventTeleportOnFailure) end
 
+---@overload fun(character:CHARACTER, x:number, y:number, z:number, directionFrom:GUIDSTRING, playSpawn:integer, customSpawnAnimation:ANIMATION, appearedEvent:string)
 ---@param character CHARACTER
 ---@param x number
 ---@param y number
@@ -2368,12 +2377,15 @@ function Osi.AppearOutOfSightTo(character, target, directionFrom, playSpawn, cus
 ---@param preventTeleportOnFailure integer
 function Osi.AppearOutOfSightToPosition(character, x, y, z, directionFrom, playSpawn, customSpawnAnimation, appearedEvent, preventTeleportOnFailure) end
 
+---@overload fun(object:GUIDSTRING, damage:integer, damageType:string)
 ---@param object GUIDSTRING
 ---@param damage integer
 ---@param damageType string
 ---@param source GUIDSTRING
 function Osi.ApplyDamage(object, damage, damageType, source) end
 
+---@overload fun(object:GUIDSTRING, status:string, duration:number)
+---@overload fun(object:GUIDSTRING, status:string, duration:number, force:integer)
 ---@param object GUIDSTRING
 ---@param status string
 ---@param duration number
@@ -2385,6 +2397,7 @@ function Osi.ApplyStatus(object, status, duration, force, source) end
 ---@param character CHARACTER
 function Osi.AssignToUser(userID, character) end
 
+---@overload fun(parentObject:GUIDSTRING, proxyObject:GUIDSTRING)
 ---@param parentObject GUIDSTRING
 ---@param proxyObject GUIDSTRING
 ---@param attachment string
@@ -2400,6 +2413,7 @@ function Osi.AttachSpring(springObject, attachedBone, attachToObject, attachToBo
 ---@param toCharacter CHARACTER
 function Osi.AttachToPartyGroup(attaching, toCharacter) end
 
+---@overload fun(character:CHARACTER, target:GUIDSTRING)
 ---@param character CHARACTER
 ---@param target GUIDSTRING
 ---@param alwaysHit integer
@@ -2449,6 +2463,7 @@ function Osi.CharacterGiveEquipmentSet(target, equipmentSet) end
 ---@param timer number
 function Osi.CharacterIgnoreCharacterActiveCrimes(character, player, timer) end
 
+---@overload fun(character:CHARACTER, target:GUIDSTRING, movementSpeed:string, event:string)
 ---@param character CHARACTER
 ---@param target GUIDSTRING
 ---@param movementSpeed string
@@ -2470,6 +2485,7 @@ function Osi.CharacterMoveToAndTalk(character, target, dialog, moveID, movementS
 ---@param reason string
 function Osi.CharacterMoveToAndTalkFail(character, target, moveId, reason) end
 
+---@overload fun(character:CHARACTER, x:number, y:number, z:number, movementSpeed:string, event:string)
 ---@param character CHARACTER
 ---@param x number
 ---@param y number
@@ -2505,6 +2521,9 @@ function Osi.ClearCustomMaterialResourceOverrides(object) end
 ---@param tag TAG
 function Osi.ClearDialogTag(target, tag) end
 
+---@overload fun(flag:FLAG)
+---@overload fun(flag:FLAG, object:GUIDSTRING)
+---@overload fun(flag:FLAG, object:GUIDSTRING, dialogInstance:integer)
 ---@param flag FLAG
 ---@param object GUIDSTRING
 ---@param dialogInstance integer
@@ -2533,6 +2552,7 @@ function Osi.ClearOwnership(item) end
 ---@param faction2 FACTION
 function Osi.ClearRelation(faction1, faction2) end
 
+---@overload fun(character:CHARACTER, seconds:number, fadeID:string)
 ---@param character CHARACTER
 ---@param seconds number
 ---@param fadeID string
@@ -2592,12 +2612,14 @@ function Osi.ConstellationTriggerInputSocket(constellationObject, inputSocketNam
 ---@param source CHARACTER
 function Osi.CopyCharacterEquipment(target, source) end
 
+---@overload fun(target:GUIDSTRING, spellID:string, casterLevel:integer)
 ---@param target GUIDSTRING
 ---@param spellID string
 ---@param casterLevel integer
 ---@param caster2 GUIDSTRING
 function Osi.CreateExplosion(target, spellID, casterLevel, caster2) end
 
+---@overload fun(x:number, y:number, z:number, spellID:string, casterLevel:integer)
 ---@param x number
 ---@param y number
 ---@param z number
@@ -2625,6 +2647,7 @@ function Osi.CreateProjectileStrikeAtPosition(x, y, z, spellID) end
 ---@param growTime number
 function Osi.CreatePuddle(target, surfaceType, cellAmountMin, cellAmountMax, growAmountMin, growAmountMax, growTime) end
 
+---@overload fun(target:GUIDSTRING, surfaceType:string, radius:number, lifetime:number)
 ---@param target GUIDSTRING
 ---@param surfaceType string
 ---@param radius number
@@ -2632,6 +2655,7 @@ function Osi.CreatePuddle(target, surfaceType, cellAmountMin, cellAmountMax, gro
 ---@param source GUIDSTRING
 function Osi.CreateSurface(target, surfaceType, radius, lifetime, source) end
 
+---@overload fun(x:number, y:number, z:number, surfaceType:string, radius:number, lifetime:number)
 ---@param x number
 ---@param y number
 ---@param z number
@@ -2861,6 +2885,9 @@ function Osi.DialogSetVariableTranslatedString(dialog, variable, stringHandleVal
 ---@param referenceStringValue string
 function Osi.DialogSetVariableTranslatedStringForInstance(instanceID, variable, stringHandleValue, referenceStringValue) end
 
+---@overload fun(target:GUIDSTRING)
+---@overload fun(target:GUIDSTRING, deathType:DEATHTYPE, generateTreasure:integer)
+---@overload fun(target:GUIDSTRING, deathType:DEATHTYPE, source:GUIDSTRING, generateTreasure:integer, immediate:integer)
 ---@param target GUIDSTRING
 ---@param deathType DEATHTYPE
 ---@param source GUIDSTRING
@@ -2873,6 +2900,7 @@ function Osi.Die(target, deathType, source, generateTreasure, immediate, impactF
 ---@param event TUTORIALEVENT
 function Osi.DisableTutorialEvent(entity, event) end
 
+---@overload fun(character:CHARACTER, target:GUIDSTRING, movementSpeed:string, increaseSpeed:integer, disappearEvent:string)
 ---@param character CHARACTER
 ---@param target GUIDSTRING
 ---@param movementSpeed string
@@ -2928,6 +2956,9 @@ function Osi.EnterCombat(source, target) end
 ---@param zoneID GUIDSTRING
 function Osi.EnterSharedTurnBaseMode(playerCharacter, zoneID) end
 
+---@overload fun(character:CHARACTER, item:ITEM)
+---@overload fun(character:CHARACTER, item:ITEM, addToMainInventoryOnFail:integer)
+---@overload fun(character:CHARACTER, item:ITEM, addToMainInventoryOnFail:integer, showNotification:integer)
 ---@param character CHARACTER
 ---@param item ITEM
 ---@param addToMainInventoryOnFail integer
@@ -3049,6 +3080,7 @@ function Osi.ItemDragTo(item, trigger) end
 ---@param z number
 function Osi.ItemDragToPosition(item, x, y, z) end
 
+---@overload fun(item:ITEM, target:GUIDSTRING, speed:number, acceleration:number, useRotation:integer)
 ---@param item ITEM
 ---@param target GUIDSTRING
 ---@param speed number
@@ -3057,6 +3089,7 @@ function Osi.ItemDragToPosition(item, x, y, z) end
 ---@param event string
 function Osi.ItemMoveTo(item, target, speed, acceleration, useRotation, event) end
 
+---@overload fun(item:ITEM, x:number, y:number, z:number, speed:number, acceleration:number)
 ---@param item ITEM
 ---@param x number
 ---@param y number
@@ -3169,6 +3202,7 @@ function Osi.LockUnequip(item, lock) end
 ---@param character CHARACTER
 function Osi.LockWaypoint(waypointName, character) end
 
+---@overload fun(character:CHARACTER, target:GUIDSTRING)
 ---@param character CHARACTER
 ---@param target GUIDSTRING
 ---@param duration number
@@ -3238,6 +3272,8 @@ function Osi.MakeNPC(character) end
 ---@param ignoreVote integer
 function Osi.MakePeace(source, target, ignoreVote) end
 
+---@overload fun(targetCharacter:CHARACTER)
+---@overload fun(targetCharacter:CHARACTER, ownerCharacter:CHARACTER)
 ---@param targetCharacter CHARACTER
 ---@param ownerCharacter CHARACTER
 ---@param canBeReassigned integer
@@ -3255,6 +3291,8 @@ function Osi.MakeWar(source, target, ignoreVote) end
 ---@param newRegionID string
 function Osi.MapMarkerChangeLevel(markerID, newRegionID) end
 
+---@overload fun(fromObject:GUIDSTRING, toObject:GUIDSTRING)
+---@overload fun(fromObject:GUIDSTRING, toObject:GUIDSTRING, moveEquippedArmor:integer, moveEquippedWeapons:integer, clearOriginalOwner:integer)
 ---@param fromObject GUIDSTRING
 ---@param toObject GUIDSTRING
 ---@param moveEquippedArmor integer
@@ -3327,6 +3365,7 @@ function Osi.ObjectSetTitleHidden(object, isHide) end
 ---@param timer string
 function Osi.ObjectTimerCancel(entity, timer) end
 
+---@overload fun(entity:GUIDSTRING, timer:string, time2:integer)
 ---@param entity GUIDSTRING
 ---@param timer string
 ---@param time2 integer
@@ -3384,6 +3423,7 @@ function Osi.PartyIncreaseActionResourceValue(player, resourceName, delta) end
 ---@param combatGuid GUIDSTRING
 function Osi.PauseCombat(combatGuid) end
 
+---@overload fun(character:CHARACTER, item:ITEM, event:string)
 ---@param character CHARACTER
 ---@param item ITEM
 ---@param event string
@@ -3412,6 +3452,7 @@ function Osi.PlatformMoveTo(platform, targetX, targetY, targetZ, speed, eventId,
 ---@param bool integer
 function Osi.PlatformSetOnStage(object, bool) end
 
+---@overload fun(sourceObject:GUIDSTRING, animation:ANIMATION)
 ---@param sourceObject GUIDSTRING
 ---@param animation ANIMATION
 ---@param event string
@@ -3424,12 +3465,15 @@ function Osi.PlayAnimation(sourceObject, animation, event) end
 ---@param targetBone string
 function Osi.PlayBeamEffect(object, target, fxName, sourceBone, targetBone) end
 
+---@overload fun(object:GUIDSTRING, fxName:EFFECTRESOURCE)
+---@overload fun(object:GUIDSTRING, fxName:EFFECTRESOURCE, bone:string)
 ---@param object GUIDSTRING
 ---@param fxName EFFECTRESOURCE
 ---@param bone string
 ---@param scale number
 function Osi.PlayEffect(object, fxName, bone, scale) end
 
+---@overload fun(fxName:EFFECTRESOURCE, x:number, y:number, z:number)
 ---@param fxName EFFECTRESOURCE
 ---@param x number
 ---@param y number
@@ -3487,6 +3531,7 @@ function Osi.PrepareLevelStartingDialog(startingDialog) end
 ---@param progress integer
 function Osi.ProgressAchievement(achievementID, character, progress) end
 
+---@overload fun(character:CHARACTER)
 ---@param character CHARACTER
 ---@param sendPurgedEvent integer
 function Osi.PurgeOsirisQueue(character, sendPurgedEvent) end
@@ -3520,6 +3565,7 @@ function Osi.QuestMessageWithCounterShow(messageId, localizedTextKey, initialCou
 ---@param categoryID string
 function Osi.QuestSetCategory(quest, categoryID) end
 
+---@overload fun(questID:string, stateID:string)
 ---@param character CHARACTER
 ---@param questID string
 ---@param stateID string
@@ -3619,6 +3665,7 @@ function Osi.RemovePassive(entity, passiveID) end
 ---@param tag TAG
 function Osi.RemovePreferredAiTargetTag(character, tag) end
 
+---@overload fun(character:CHARACTER, spell:string)
 ---@param character CHARACTER
 ---@param spell string
 ---@param removeContainerSpells integer
@@ -3627,11 +3674,13 @@ function Osi.RemoveSpell(character, spell, removeContainerSpells) end
 ---@param entity GUIDSTRING
 function Osi.RemoveSplatters(entity) end
 
+---@overload fun(target:GUIDSTRING, status:string)
 ---@param target GUIDSTRING
 ---@param status string
 ---@param cause GUIDSTRING
 function Osi.RemoveStatus(target, status, cause) end
 
+---@overload fun(target:GUIDSTRING, statusGroup:string)
 ---@param target GUIDSTRING
 ---@param statusGroup string
 ---@param cause GUIDSTRING
@@ -3664,6 +3713,7 @@ function Osi.RemoveTrackedSoundEntity(object) end
 ---@param object GUIDSTRING
 function Osi.RemoveTransforms(object) end
 
+---@overload fun(roller:CHARACTER, rollSubject:GUIDSTRING, rollType:string, difficultyClassID:DIFFICULTYCLASS, event:string)
 ---@param roller CHARACTER
 ---@param rollSubject GUIDSTRING
 ---@param rollType string
@@ -3726,6 +3776,7 @@ function Osi.RequestLongRestWaiting() end
 ---@param tutorialID string
 function Osi.RequestModalTutorial(player, tutorialID) end
 
+---@overload fun(roller:CHARACTER, rollSubject:GUIDSTRING, rollType:string, difficultyClassID:DIFFICULTYCLASS, event:string)
 ---@param roller CHARACTER
 ---@param rollSubject GUIDSTRING
 ---@param rollType string
@@ -3797,6 +3848,7 @@ function Osi.RestoreParty(character) end
 ---@param combatGuid GUIDSTRING
 function Osi.ResumeCombat(combatGuid) end
 
+---@overload fun(character:CHARACTER)
 ---@param character CHARACTER
 ---@param resurrectAnimationOverride ANIMATION
 ---@param resetXPReward integer
@@ -3805,6 +3857,7 @@ function Osi.Resurrect(character, resurrectAnimationOverride, resetXPReward) end
 ---@param character CHARACTER
 function Osi.SaveAnubisState(character) end
 
+---@overload fun(item:ITEM, x:number, y:number, z:number)
 ---@param item ITEM
 ---@param x number
 ---@param y number
@@ -3949,12 +4002,14 @@ function Osi.SetDisableUse(item, bool) end
 ---@param value integer
 function Osi.SetDoNotFaceFlag(character, value) end
 
+---@overload fun(object1:GUIDSTRING, object2:GUIDSTRING, event:string)
 ---@param object1 GUIDSTRING
 ---@param object2 GUIDSTRING
 ---@param event string
 ---@param unicast integer
 function Osi.SetDualEntityEvent(object1, object2, event, unicast) end
 
+---@overload fun(object1:GUIDSTRING, object2:GUIDSTRING, event:string, dialog:DIALOGRESOURCE)
 ---@param object1 GUIDSTRING
 ---@param object2 GUIDSTRING
 ---@param event string
@@ -3962,6 +4017,7 @@ function Osi.SetDualEntityEvent(object1, object2, event, unicast) end
 ---@param unicast integer
 function Osi.SetDualEntityEventDialog(object1, object2, event, dialog, unicast) end
 
+---@overload fun(object1:GUIDSTRING, object2:GUIDSTRING, event:string, realParam:number)
 ---@param object1 GUIDSTRING
 ---@param object2 GUIDSTRING
 ---@param event string
@@ -3976,23 +4032,27 @@ function Osi.SetEditionForCustomBook(bookname, edition) end
 ---@param state integer
 function Osi.SetEndTheDayState(state) end
 
+---@overload fun(object:GUIDSTRING, event:string)
 ---@param object GUIDSTRING
 ---@param event string
 ---@param unicast integer
 function Osi.SetEntityEvent(object, event, unicast) end
 
+---@overload fun(object:GUIDSTRING, event:string, dialog:DIALOGRESOURCE)
 ---@param object GUIDSTRING
 ---@param event string
 ---@param dialog DIALOGRESOURCE
 ---@param unicast integer
 function Osi.SetEntityEventDialog(object, event, dialog, unicast) end
 
+---@overload fun(object:GUIDSTRING, event:string, guidParam:GUIDSTRING)
 ---@param object GUIDSTRING
 ---@param event string
 ---@param guidParam GUIDSTRING
 ---@param unicast integer
 function Osi.SetEntityEventGuid(object, event, guidParam, unicast) end
 
+---@overload fun(object:GUIDSTRING, event:string, realParam:number)
 ---@param object GUIDSTRING
 ---@param event string
 ---@param realParam number
@@ -4003,6 +4063,9 @@ function Osi.SetEntityEventReal(object, event, realParam, unicast) end
 ---@param faction FACTION
 function Osi.SetFaction(target, faction) end
 
+---@overload fun(flag:FLAG)
+---@overload fun(flag:FLAG, object:GUIDSTRING)
+---@overload fun(flag:FLAG, object:GUIDSTRING, dialogInstance:integer)
 ---@param flag FLAG
 ---@param object GUIDSTRING
 ---@param dialogInstance integer
@@ -4024,6 +4087,7 @@ function Osi.SetGlobalPriceModifier(modifier) end
 ---@param god GUIDSTRING
 function Osi.SetGodOverride(entity, god) end
 
+---@overload fun(item:ITEM, gravityType:GRAVITYTYPE)
 ---@param item ITEM
 ---@param gravityType GRAVITYTYPE
 ---@param instigator GUIDSTRING
@@ -4037,11 +4101,13 @@ function Osi.SetHasDialog(speaker, hasDialog) end
 ---@param hasOsirisDialog integer
 function Osi.SetHasOsirisDialog(speaker, hasOsirisDialog) end
 
+---@overload fun(entity:GUIDSTRING, hp:integer)
 ---@param entity GUIDSTRING
 ---@param hp integer
 ---@param healTypes string
 function Osi.SetHitpoints(entity, hp, healTypes) end
 
+---@overload fun(entity:GUIDSTRING, percentage:number)
 ---@param entity GUIDSTRING
 ---@param percentage number
 ---@param healTypes string
@@ -4286,6 +4352,7 @@ function Osi.ShowAllActivities(type) end
 ---@param error string
 function Osi.ShowError(character, error) end
 
+---@overload fun()
 ---@param reason string
 function Osi.ShowGameOverMenu(reason) end
 
@@ -4420,6 +4487,11 @@ function Osi.TeleportPartiesToLevelWithMovie(levelName, event, movie) end
 ---@param movie string
 function Osi.TeleportPartiesWithMovie(target, event, movie) end
 
+---@overload fun(sourceObject:GUIDSTRING, targetObject:GUIDSTRING)
+---@overload fun(sourceObject:GUIDSTRING, targetObject:GUIDSTRING, event:string)
+---@overload fun(sourceObject:GUIDSTRING, targetObject:GUIDSTRING, event:string, teleportLinkedCharacters:integer)
+---@overload fun(sourceObject:GUIDSTRING, targetObject:GUIDSTRING, event:string, teleportLinkedCharacters:integer, teleportPartyFollowers:integer)
+---@overload fun(sourceObject:GUIDSTRING, targetObject:GUIDSTRING, event:string, teleportLinkedCharacters:integer, teleportPartyFollowers:integer, teleportSummons:integer)
 ---@param sourceObject GUIDSTRING
 ---@param targetObject GUIDSTRING
 ---@param event string
@@ -4430,6 +4502,9 @@ function Osi.TeleportPartiesWithMovie(target, event, movie) end
 ---@param snapToGround integer
 function Osi.TeleportTo(sourceObject, targetObject, event, teleportLinkedCharacters, teleportPartyFollowers, teleportSummons, leaveCombat, snapToGround) end
 
+---@overload fun(sourceObject:GUIDSTRING, x:number, y:number, z:number)
+---@overload fun(sourceObject:GUIDSTRING, x:number, y:number, z:number, event:string, teleportLinkedCharacters:integer)
+---@overload fun(sourceObject:GUIDSTRING, x:number, y:number, z:number, event:string, teleportLinkedCharacters:integer, teleportPartyFollowers:integer, teleportSummons:integer)
 ---@param sourceObject GUIDSTRING
 ---@param x number
 ---@param y number
@@ -4442,6 +4517,7 @@ function Osi.TeleportTo(sourceObject, targetObject, event, teleportLinkedCharact
 ---@param snapToGround integer
 function Osi.TeleportToPosition(sourceObject, x, y, z, event, teleportLinkedCharacters, teleportPartyFollowers, teleportSummons, leaveCombat, snapToGround) end
 
+---@overload fun(itemTemplate:ITEMROOT, inventoryHolder:GUIDSTRING, count:integer)
 ---@param itemTemplate ITEMROOT
 ---@param inventoryHolder GUIDSTRING
 ---@param count integer
@@ -4481,6 +4557,9 @@ function Osi.TimerPause(timer) end
 ---@param timer string
 function Osi.TimerUnpause(timer) end
 
+---@overload fun(object:GUIDSTRING, targetObject:GUIDSTRING)
+---@overload fun(object:GUIDSTRING, targetObject:GUIDSTRING, amount:integer)
+---@overload fun(object:GUIDSTRING, targetObject:GUIDSTRING, amount:integer, showNotification:integer)
 ---@param object GUIDSTRING
 ---@param targetObject GUIDSTRING
 ---@param amount integer
@@ -4642,6 +4721,7 @@ function Osi.UnloadItem(target) end
 ---@param levelTemplate LEVELTEMPLATE
 function Osi.UnloadLevelTemplate(levelTemplate) end
 
+---@overload fun(item:ITEM)
 ---@param item ITEM
 ---@param character CHARACTER
 function Osi.Unlock(item, character) end
@@ -4674,6 +4754,7 @@ function Osi.UnlockWaypoint(waypointName, trigger, character) end
 ---@param character CHARACTER
 function Osi.UnregisterAsCompanion(character) end
 
+---@overload fun(character:CHARACTER, item:ITEM, event:string)
 ---@param character CHARACTER
 ---@param item ITEM
 ---@param useItem integer
@@ -4681,6 +4762,7 @@ function Osi.UnregisterAsCompanion(character) end
 ---@param event string
 function Osi.Use(character, item, useItem, isInteraction, event) end
 
+---@overload fun(caster:GUIDSTRING, spellID:string, target:GUIDSTRING)
 ---@overload fun(caster:GUIDSTRING, spellID:string, target:GUIDSTRING, target2:GUIDSTRING)
 ---@param caster GUIDSTRING
 ---@param spellID string
