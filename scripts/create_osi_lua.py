@@ -561,33 +561,33 @@ def run(header_file:Path, output_path:Path, osi_file:Path, lslib_dll:Path, do_so
     if do_db or do_extra or (osi_file.exists() and lslib_dll.exists()):
         print("Getting proc overloads from story.div.osi")
         story = extract_osiris.run(osi_file, lslib_dll, None, False)
-        if story != None:
-            print("Reviewing PROCs...")
-            for call in story.procs:
-                existing = function_map.get(call.name, None)
-                if (existing and len(call.params) < len(existing.parameters)) or do_extra:
-                    params = convert_params(call.params)
-                    if existing:
-                        # TODO handle the other case
-                        if len(call.params) < len(existing.parameters):
-                            existing.overloads.append(CallDefinition(existing.name, params))
-                    elif do_extra:
-                        proc_definitions.append(CallDefinition(call.name, params))
-            if do_extra:
-                print("Getting QRY definitions...")
-                for qry in story.user_queries:
-                    params = convert_params(qry.params)
-                    out = convert_params(qry.return_params)
-                    if len(out) == 0:
-                        out = {FuncVariable('', )}
-                    user_query_definitions.append(QueryDefinition(qry.name, params, out))
-            if do_db:
-                print("Getting DB definitions...")
-                for entry in story.databases:
-                    params = convert_params(entry.params)
-                    db = DatabaseDefinition(entry.name, params)
-                    database_definitions.append(db)
-                    function_map[db.name] = db
+        if story == None:
+            raise AssertionError("extract_osiris.py did not error but did not return OsirisResults!")
+        for call in story.procs:
+            existing = function_map.get(call.name, None)
+            if (existing and len(call.params) < len(existing.parameters)) or do_extra:
+                params = convert_params(call.params)
+                if existing:
+                    # TODO handle the other case
+                    if len(call.params) < len(existing.parameters):
+                        existing.overloads.append(CallDefinition(existing.name, params))
+                elif do_extra:
+                    proc_definitions.append(CallDefinition(call.name, params))
+        if do_extra:
+            print("Getting QRY definitions...")
+            for qry in story.user_queries:
+                params = convert_params(qry.params)
+                out = convert_params(qry.return_params)
+                if len(out) == 0:
+                    out = {FuncVariable('', )}
+                user_query_definitions.append(QueryDefinition(qry.name, params, out))
+        if do_db:
+            print("Getting DB definitions...")
+            for entry in story.databases:
+                params = convert_params(entry.params)
+                db = DatabaseDefinition(entry.name, params)
+                database_definitions.append(db)
+                function_map[db.name] = db
     else:
         print(f"--osi {osi_file} or --divine {lslib_dll} do not exist - skipping.")
     
