@@ -212,7 +212,7 @@ class TupleFuncVariable(FuncVariable):
             raise "No type override on TupleFuncVariable plz"
         t = "{"
         for i in range(len(self.type)):
-            t += "{}[{}]: {}".format("" if i == 0 else ", ", i, self.type[i].export_type(func_name))
+            t += "{}[{}]: {}".format("" if i == 0 else ", ", i+1, self.type[i].export_type(func_name))
         t += "}[]"
         return t
 
