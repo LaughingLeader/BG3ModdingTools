@@ -166,8 +166,9 @@ def run(target_file:Path, lslib_dll:Path, output_dir:Path = None, output_txt:boo
     elif target_file.suffix == ".lsv":
         helper = SavegameHelpers(str(target_file))
         story = helper.LoadStory()
-        load_story(story)
+        result = load_story(story)
         helper.Dispose()
+        return result
     elif target_file.suffix == ".json":
         with target_file.open("r", encoding="utf-8") as f:
             result = parse_data(f.read())
