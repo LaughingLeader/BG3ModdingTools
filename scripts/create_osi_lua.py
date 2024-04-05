@@ -645,7 +645,7 @@ if __name__ == "__main__":
     default_output_path = Path(script_dir.parent.joinpath("generated/Osi.lua"))
     default_divine_path = common.get_lslib_path()
     
-    debug = False
+    debug = True
     
     parser = argparse.ArgumentParser()
     parser.add_argument("--header", type=Path, required=not debug, help="The path to a story_header.div file.")
