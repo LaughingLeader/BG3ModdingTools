@@ -16,6 +16,7 @@ class OsirisEntry:
     name:str
     params:list[str] = field(default_factory=list)
     return_params:list[str] = field(default_factory=list)
+    ref:int = None
     
     def __str__(self) -> str:
         params_str = ""
@@ -113,7 +114,8 @@ def run(target_file:Path, lslib_dll:Path, output_dir:Path = None, output_txt:boo
                 entry = OsirisEntry(name, params, out_params)
             else:
                 entry = OsirisEntry(name, params)
-            # TODO: what's data["signature"]["ref"]?
+            entry.ref = data["ref"]
+            
             match entry_type:
                 case "Database":
                     databases.append(entry)
@@ -124,8 +126,6 @@ def run(target_file:Path, lslib_dll:Path, output_dir:Path = None, output_txt:boo
                 case "Query":
                     queries.append(entry)
                 case "UserQuery":
-                    if len(entry.return_params) == 0:
-                        entry.return_params.append('bool')
                     user_queries.append(entry)
                 case "Proc":
                     procs.append(entry)
