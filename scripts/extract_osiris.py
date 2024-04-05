@@ -17,6 +17,7 @@ class OsirisEntry:
     name:str
     params:list[str] = field(default_factory=list)
     return_params:list[str] = field(default_factory=list)
+    ref:int = None
     
     def __str__(self) -> str:
         params_str = ""
@@ -32,6 +33,8 @@ class OsirisEntry:
         combined_params = params_str + return_params_str
         if combined_params != "":
             combined_params = f"({combined_params})"
+        if self.ref:
+            combined_params += f" (ref: {self.ref})"
         return f"{self.name}{combined_params}"
     
     def __repr__(self): return self.__str__()
@@ -98,33 +101,39 @@ def run(target_file:Path, lslib_dll:Path, output_dir:Path = None, output_txt:boo
             name = data["signature"]["name"]
             raw_params = data["signature"]["params"]
             params = [type_dict.get(x) for x in raw_params] if raw_params is not None else []
+            out_param_bitmask = data["signature"]["out"]
+            if out_param_bitmask and raw_params is not None:
+                out_param_bitmask = int(out_param_bitmask)
+                out_params = []
+                params = []
+                for i in range(len(raw_params)):
+                    param_id = raw_params[i]
+                    out_param = get_query_param(name, i+1, param_id, out_param_bitmask)
+                    if out_param:
+                        out_params.append(out_param)
+                    else:
+                        params.append(type_dict.get(param_id))
+                entry = OsirisEntry(name, params, out_params)
+            else:
+                entry = OsirisEntry(name, params)
+
+            entry.ref = data["ref"]
+
             match entry_type:
                 case "Database":
-                    databases.append(OsirisEntry(name, params))
+                    databases.append(entry)
                 case "Event":
-                    events.append(OsirisEntry(name, params))
+                    events.append(entry)
                 case "Call":
-                    calls.append(OsirisEntry(name, params))
+                    calls.append(entry)
                 case "Query":
-                    out_param_bitmask = data["signature"]["out"]
-                    if out_param_bitmask and raw_params is not None:
-                        out_param_bitmask = int(out_param_bitmask)
-                        out_params = []
-                        params = []
-                        for i in range(len(raw_params)):
-                            param_id = raw_params[i]
-                            out_param = get_query_param(name, i+1, param_id, out_param_bitmask)
-                            if out_param:
-                                out_params.append(out_param)
-                            else:
-                                params.append(type_dict.get(param_id))
-                        queries.append(OsirisEntry(name, params, out_params))
-                    else:
-                        queries.append(OsirisEntry(name, params))
+                    queries.append(entry)
                 case "UserQuery":
-                    user_queries.append(OsirisEntry(name, params))
+                    if len(entry.return_params) == 0:
+                        entry.return_params.append('bool')
+                    user_queries.append(entry)
                 case "Proc":
-                    procs.append(OsirisEntry(name, params))
+                    procs.append(entry)
         
         def get_key(x): return x.name
         

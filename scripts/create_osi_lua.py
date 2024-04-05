@@ -55,18 +55,21 @@ enum_alias_template = """---@alias {name}
 {entries}
 """
 
-type_remap = {
-    1: "integer",
-    2: "integer",
-    3: "number",
-    4: "string",
-    5: "string"
+# These types are essentially synonymous, so we just use the lua type name instead
+name_remap = {
+    "INTEGER": "integer", # id 1
+    "REAL": "number", # id 3
+    "STRING": "string" # id 4
 }
 
-name_remap = {
-    "INTEGER": "integer",
-    "REAL": "number",
-    "STRING": "string"
+# A dictionary of all the base type IDs to their lua types. The starred ones are handled in this code by name_remap.
+# The unstarred types have no strict lua equivalent, so we alias them to the nearest lua type
+type_remap = {
+    1: "integer", # *INTEGER
+    2: "integer", # INTEGER64
+    3: "number", # *REAL
+    4: "string", # *STRING
+    5: "string" # GUIDSTRING
 }
 
 CustomAliases = {
@@ -89,11 +92,13 @@ CustomAliases = {
     ]
 }
 
+# dict<func_name, dict<arg_name, proper_type_string>>
 CustomFunctionTypes = {
     "GetEquippedItem": {"Slotname": "EQUIPMENTSLOTNAME"},
     "CharacterDisarmed": {"SlotName": "EQUIPMENTSLOTNAME"}
 }
 
+# For when the overload skips one or more arguments found in the "original"
 ManualOverloadFix = {
     "Die": {3: ["target:GUIDSTRING", "deathType:DEATHTYPE", "generateTreasure:integer"]},
     "QuestUpdate": {2: ["questID:string", "stateID:string"]}, # Applies to all DB_Players
@@ -105,6 +110,18 @@ ManualOverloadFix = {
 LuaManualRenaming = {
     "gUIDstring": "guidString",
     "slotname": "slotName",
+}
+
+# These functions have Procs with more variables than the Call. Only the additional arguments are given.
+# dict<func_name, dict<arg_idx, better_arg_name>>
+ProcExtensions = {
+    "SetHitpointsPercentage": {3: "onlyIfDifferentRounded"}
+}
+
+# The functions with these refs should not be output at all
+IgnoreRefs = {
+    3794: ["ItemMoveToPosition", 8], # deprecated, just calls the 7-arg version without the 8th
+    3790: ["ItemMoveTo", 7], # deprecated, just calls the 6-arg version without the 7th
 }
 
 types:dict[int, 'OsirisType'] = {}
@@ -139,6 +156,7 @@ class OsirisType:
             self.name = remap
             self.skip_export = True
     
+    # Has no uses (except by itself) in this repo atm
     def to_lua_type(self)->str:
         lua_type = type_remap.get(self.actual_id, "any")
         base_type = types.get(self.actual_id, None)
@@ -188,12 +206,14 @@ class FuncVariable:
             return t.name
         return "any"
 
+# boolean is ordinarily not a valid Osiris value, but it's returned by QRY_ functions
 @dataclass
-class BoolVariable(FuncVariable):
+class BoolFuncVariable(FuncVariable):
         
     def export_type(self, func_name:str = "", type_override:OsirisType = None):
         return "boolean"
 
+# These function variables can be nil instead (only for DB calls atm)
 @dataclass
 class OptionalFuncVariable(FuncVariable):
         
@@ -203,8 +223,9 @@ class OptionalFuncVariable(FuncVariable):
             t += "?"
         return t
 
+# Represents an array of tuples, the closest known way to model the return value of DB Get functions
 @dataclass
-class TupleFuncVariable(FuncVariable):
+class TupleArrayFuncVariable(FuncVariable):
     type:list[FuncVariable] = field(default_factory=list)
         
     def export_type(self, func_name:str = "", type_override:OsirisType = None):
@@ -346,12 +367,13 @@ class DatabaseDefinition(CallDefinition):
         params_as_opt = list(map(lambda x: OptionalFuncVariable(x.name, x.type), self.parameters))
         params_doc += CallDefinition(self.name + ":Delete", params_as_opt).export()
         params_doc += '\n'
-        ret_type = TupleFuncVariable("", self.parameters)
+        ret_type = TupleArrayFuncVariable("", self.parameters)
         params_doc += QueryDefinition(self.name + ":Get", params_as_opt, [ret_type]).export()
         return params_doc
 
 name_to_type:dict[str, OsirisType] = {}
 
+# TODO: keep only the names here instead and index function_map?
 call_definitions:list[CallDefinition] = []
 query_definitions:list[QueryDefinition] = []
 event_definitions:list[CallDefinition] = []
@@ -498,7 +520,7 @@ if Osi == nil then Osi = {{}} end
         return target
 
     types_str,aliases_str,enums_str = get_types_export()
-    calls_str = "\n".join([x.export() for x in get_sorted(call_definitions)])
+    calls_str = "\n".join([function_map[x.name].export() for x in get_sorted(call_definitions)])
     queries_str = "\n".join([x.export() for x in get_sorted(query_definitions)])
     
     custom_aliases_str = "\n".join([dict_to_alias(k,v) for k,v in CustomAliases.items()])
@@ -555,7 +577,7 @@ def run(header_file:Path, output_path:Path, osi_file:Path, lslib_dll:Path, do_so
             if t:
                 params.append(FuncVariable(f"a{i}", t.id))
             else:
-                params.append(BoolVariable("", -1))
+                params.append(BoolFuncVariable("", -1))
         return params
     
     if do_db or do_extra or (osi_file.exists() and lslib_dll.exists()):
@@ -563,18 +585,42 @@ def run(header_file:Path, output_path:Path, osi_file:Path, lslib_dll:Path, do_so
         story = extract_osiris.run(osi_file, lslib_dll, None, False)
         if story == None:
             raise AssertionError("extract_osiris.py did not error but did not return OsirisResults!")
+        print(f"Scanning {len(story.procs)} PROCs")
         for call in story.procs:
+            if call.ref in IgnoreRefs:
+                if call.name != IgnoreRefs[call.ref][0]:
+                    raise AssertionError(f"Ref {call.ref} changed from {IgnoreRefs[call.ref]} to {call}?!")
+                else:
+                    continue
+
             existing = function_map.get(call.name, None)
-            if (existing and len(call.params) < len(existing.parameters)) or do_extra:
+            if existing or do_extra:
                 params = convert_params(call.params)
+                call_def = CallDefinition(call.name, params)
                 if existing:
-                    # TODO handle the other case
                     if len(call.params) < len(existing.parameters):
-                        existing.overloads.append(CallDefinition(existing.name, params))
+                        existing.overloads.append(call_def)
+                    elif call.name in ProcExtensions:
+                        params = call_def.parameters
+                        for i in range(len(params)):
+                            if i < len(existing.parameters):
+                                if params[i].type != existing.parameters[i].type:
+                                    raise AssertionError(f"Move {call.name} from ProcExtensions to ManualOverloadFix: " +
+                                                         "types don't match the base!")
+                                params[i].name = existing.parameters[i].name
+                            elif i in ProcExtensions[call.name]:
+                                params[i].name = ProcExtensions[call.name][i]
+                        call_def.overloads = existing.overloads
+                        existing.overloads = {}
+                        call_def.overloads.append(existing)
+                        function_map[call.name] = call_def
+                    else:
+                        print('Please add overload with more parameters than "normal" to IgnoreRefs or ProcExtensions:',
+                              f"{len(call.params)} vs {len(existing.parameters)}: {call}")
                 elif do_extra:
-                    proc_definitions.append(CallDefinition(call.name, params))
+                    proc_definitions.append(call_def)
         if do_extra:
-            print("Getting QRY definitions...")
+            print(f"Scanning {len(story.user_queries)} QRYs")
             for qry in story.user_queries:
                 params = convert_params(qry.params)
                 out = convert_params(qry.return_params)
@@ -582,7 +628,7 @@ def run(header_file:Path, output_path:Path, osi_file:Path, lslib_dll:Path, do_so
                     out = {FuncVariable('', )}
                 user_query_definitions.append(QueryDefinition(qry.name, params, out))
         if do_db:
-            print("Getting DB definitions...")
+            print(f"Scanning {len(story.databases)} DBs")
             for entry in story.databases:
                 params = convert_params(entry.params)
                 db = DatabaseDefinition(entry.name, params)
