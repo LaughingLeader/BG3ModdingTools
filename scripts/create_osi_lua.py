@@ -105,7 +105,6 @@ ManualOverloadFix = {
     "RequestActiveRoll": {5: ["roller:CHARACTER", "rollSubject:GUIDSTRING", "rollType:string", "difficultyClassID:DIFFICULTYCLASS", "event:string"]},
     "RequestPassiveRoll": {5: ["roller:CHARACTER", "rollSubject:GUIDSTRING", "rollType:string", "difficultyClassID:DIFFICULTYCLASS", "event:string"]},
     "Use": {3: ["character:CHARACTER", "item:ITEM", "event:string"]},
-    "ActivateTrade": {4: ["player:CHARACTER", "trader:CHARACTER", "canSell:integer", "tradeMode:TRADEMODE"]}
 }
 
 LuaManualRenaming = {
