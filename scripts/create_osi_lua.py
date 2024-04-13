@@ -105,6 +105,7 @@ ManualOverloadFix = {
     "RequestActiveRoll": {5: ["roller:CHARACTER", "rollSubject:GUIDSTRING", "rollType:string", "difficultyClassID:DIFFICULTYCLASS", "event:string"]},
     "RequestPassiveRoll": {5: ["roller:CHARACTER", "rollSubject:GUIDSTRING", "rollType:string", "difficultyClassID:DIFFICULTYCLASS", "event:string"]},
     "Use": {3: ["character:CHARACTER", "item:ITEM", "event:string"]},
+    "ActivateTrade": {4: ["player:CHARACTER", "trader:CHARACTER", "canSell:integer", "tradeMode:TRADEMODE"]}
 }
 
 LuaManualRenaming = {
@@ -119,9 +120,9 @@ ProcExtensions = {
 }
 
 # The functions with these refs should not be output at all
-IgnoreRefs = {
-    3794: ["ItemMoveToPosition", 8], # deprecated, just calls the 7-arg version without the 8th
-    3790: ["ItemMoveTo", 7], # deprecated, just calls the 6-arg version without the 7th
+IgnoreProcs = {
+    "ItemMoveToPosition": 8, # deprecated, just calls the 7-arg version without the 8th
+    "ItemMoveTo": 7, # deprecated, just calls the 6-arg version without the 7th
 }
 
 types:dict[int, 'OsirisType'] = {}
@@ -587,11 +588,8 @@ def run(header_file:Path, output_path:Path, osi_file:Path, lslib_dll:Path, do_so
             raise AssertionError("extract_osiris.py did not error but did not return OsirisResults!")
         print(f"Scanning {len(story.procs)} PROCs")
         for call in story.procs:
-            if call.ref in IgnoreRefs:
-                if call.name != IgnoreRefs[call.ref][0]:
-                    raise AssertionError(f"Ref {call.ref} changed from {IgnoreRefs[call.ref]} to {call}?!")
-                else:
-                    continue
+            if IgnoreProcs.get(call.name) == len(call.params):
+                continue
 
             existing = function_map.get(call.name, None)
             if existing or do_extra:
@@ -648,7 +646,7 @@ if __name__ == "__main__":
     debug = True
     
     parser = argparse.ArgumentParser()
-    parser.add_argument("--header", type=Path, required=not debug, help="The path to a story_header.div file.")
+    parser.add_argument("--header", type=Path, required=not debug, default=Path(script_dir.parent.joinpath("references", "story_header.div")), help="The path to a story_header.div file.")
     parser.add_argument("-o", "--output", type=Path, default=default_output_path, help="The output file. Defaults to generated/Osi.lua")
     parser.add_argument("--divine", type=Path, default=default_divine_path, help="The path to divine.exe. Only used if a story.div.osi is included.")
     parser.add_argument("--osi", type=Path, help="The path to a save file or story.div.osi to extract Osiris data from.")
@@ -667,7 +665,6 @@ if __name__ == "__main__":
     if debug:
         #args.header = Path("G:/Modding/BG3/_Extracted/_Patches/Patch1/Mods/Gustav/Story/RawFiles/story_header.div")
         args.sort = True
-        args.header = Path(script_dir.parent.joinpath("references", "story_header.div"))
         args.osi = Path(script_dir.parent.joinpath("references", "story.div.osi"))
     
     header_file:Path = args.header
