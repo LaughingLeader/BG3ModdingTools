@@ -16,7 +16,6 @@ class OsirisEntry:
     name:str
     params:list[str] = field(default_factory=list)
     return_params:list[str] = field(default_factory=list)
-    ref:int = None
     
     def __str__(self) -> str:
         params_str = ""
@@ -114,7 +113,6 @@ def run(target_file:Path, lslib_dll:Path, output_dir:Path = None, output_txt:boo
                 entry = OsirisEntry(name, params, out_params)
             else:
                 entry = OsirisEntry(name, params)
-            entry.ref = data["ref"]
             
             match entry_type:
                 case "Database":
@@ -131,7 +129,7 @@ def run(target_file:Path, lslib_dll:Path, output_dir:Path = None, output_txt:boo
                     procs.append(entry)
         
         def get_key(x): return x.name
-
+        
         databases = StrList(sorted(databases, key=get_key))
         events = StrList(sorted(events, key=get_key))
         calls = StrList(sorted(calls, key=get_key))
