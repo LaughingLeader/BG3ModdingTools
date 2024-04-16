@@ -1,11 +1,10 @@
 import os
 from pathlib import Path
 import argparse
-import json
 
 import common
 script_name = Path(__file__).stem
-log = common.init_log(script_name, False)
+log = common.init_log(script_name, True)
 
 script_dir = Path(os.path.dirname(os.path.abspath(__file__)))
 os.chdir(script_dir)
@@ -19,7 +18,8 @@ def on_error(file, e):
 def on_progress(status, numerator, denominator):
     log(status)
 
-def run(lslib_dll:Path, input_file:Path, output_file:Path = None, recursive:bool = False, in_type:str = ".lsf", out_type:str = ".lsx"):
+def run(lslib_dll:Path, file_arg:Path, output_file:Path = None, in_type:str = ".lsf", out_type:str = ".lsx"):
+    print(lslib_dll)
     if lslib_dll.exists():
         import pythonnet
         pythonnet.load('coreclr')
@@ -34,6 +34,11 @@ def run(lslib_dll:Path, input_file:Path, output_file:Path = None, recursive:bool
         load_params = ResourceLoadParameters.FromGameVersion(Game.BaldursGate3)
         conversion_params = ResourceConversionParameters.FromGameVersion(Game.BaldursGate3)
         
+        input_format = ResourceUtils.ExtensionToResourceFormat(in_type)
+        output_format = ResourceUtils.ExtensionToResourceFormat(out_type)
+        
+        files:list[Path] = [Path(s) for s in file_arg.split(";")]
+                
         def process_file(input:Path, output:Path = None):
             ext = input.suffix.lower()
             
@@ -49,26 +54,24 @@ def run(lslib_dll:Path, input_file:Path, output_file:Path = None, recursive:bool
             out_format = ResourceUtils.ExtensionToResourceFormat(output_str)
             resource = ResourceUtils.LoadResource(input_str, load_params)
             ResourceUtils.SaveResource(resource, output_str, out_format, conversion_params)
-            log(f"Converted {input} to {output}")
-
-        if input_file.is_dir():
-            
-            input_str = str(input_file.absolute())
-            if output_file is None:
-                output_file = input_file
-            output_str = str(output_file.absolute())
-            
-            input_format = ResourceUtils.ExtensionToResourceFormat(in_type)
-            out_format = ResourceUtils.ExtensionToResourceFormat(out_type)
-            
-            log(f"Running in batch mode. ext({input_format})->({out_format})")
-            log(f"Converting files in directory '{input_file}'.")
-            utils = ResourceUtils()
-            utils.errorDelegate = ResourceUtils.ErrorDelegate(on_error)
-            utils.progressUpdate = ResourceUtils.ProgressUpdateDelegate(on_progress)
-            utils.ConvertResources(input_str, output_str, input_format, out_format, load_params, conversion_params);
-        elif input_file.exists():
-            process_file(input_file, output_file)
+            log(f"Converted {input} to {output}")   
+        
+        for input_file in files:
+            if input_file.is_dir():
+                
+                input_str = str(input_file.absolute())
+                if output_file is None:
+                    output_file = input_file
+                output_str = str(output_file.absolute())
+  
+                log(f"Running in batch mode. ext({input_format})->({output_format})")
+                log(f"Converting files in directory '{input_file}'.")
+                utils = ResourceUtils()
+                utils.errorDelegate = ResourceUtils.ErrorDelegate(on_error)
+                utils.progressUpdate = ResourceUtils.ProgressUpdateDelegate(on_progress)
+                utils.ConvertResources(input_str, output_str, input_format, output_format, load_params, conversion_params);
+            elif input_file.exists():
+                process_file(input_file, output_file)
     else:
         raise FileNotFoundError("Failed to find LSLib.dll", lslib_dll)
 
@@ -76,10 +79,9 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("-d", "--divine", type=Path, default=default_divine_path, help="The path to divine.exe.")
     parser.add_argument("-o", "--output", type=Path, help="The output file path.")
-    parser.add_argument("-f", "--file", type=Path, required=True, help="The file to convert.")
-    parser.add_argument("-b", "--batch", action='store_true', help="Batch convert an input directory instead.")
-    parser.add_argument("--ext", type=str, default=".lsf", help="If in batch mode, make this the input file type (defaults to .lsf).")
-    parser.add_argument("--outputext", type=str, default=".lsx", help="If in batch mode, make this the output file tyoe  (defaults to .lsx).")
+    parser.add_argument("-f", "--file", type=str, required=True, help="A file, directory, or set of file paths (separated with ;) to convert.")
+    parser.add_argument("--ext", type=str, default=".lsf", help="If -f is a directory, process only this input file type (defaults to .lsf).")
+    parser.add_argument("--outputext", type=str, default=".lsx", help="If -f is a directory or set of files, make this the output file type  (defaults to .lsx).")
 
     parser.description = "Convert lsf files (lsf/lsb/lsx)."
     new_line = "\n    "
@@ -90,10 +92,9 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
-    input_file:Path = args.file
+    file_arg:str = args.file
     output_file:Path = args.output
     lslib_dll:Path = args.divine.is_dir() and args.divine.joinpath("LSLib.dll") or args.divine.parent.joinpath("LSLib.dll")
-    batch:bool = args.batch == True
     in_type:str = args.ext
     out_type:str = args.outputext
-    run(lslib_dll, input_file, output_file, batch, in_type, out_type)
+    run(lslib_dll, file_arg, output_file, in_type, out_type)
