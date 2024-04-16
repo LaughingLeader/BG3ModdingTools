@@ -3,6 +3,7 @@ from pathlib import Path
 import argparse
 import json
 from dataclasses import dataclass,field
+import sys
 
 import common
 script_name = Path(__file__).stem
@@ -59,8 +60,7 @@ def run(target_file:Path, lslib_dll:Path, output_dir:Path = None, output_txt:boo
     import pythonnet
     pythonnet.load('coreclr')
     import clr
-    from System.Reflection import Assembly # type: ignore 
-    Assembly.LoadFrom(str(lslib_dll.absolute()))
+    sys.path.append(str(lslib_dll.parent.absolute()))
     clr.AddReference("LSLib") # type: ignore 
     clr.AddReference("System") # type: ignore
 

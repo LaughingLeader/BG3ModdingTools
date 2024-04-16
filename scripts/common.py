@@ -1,6 +1,7 @@
 from pathlib import Path
-from typing import Callable, Optional
+from typing import Callable
 import os
+import sys
 
 def trim(text:str)->str:
     return "\n".join([s for s in text.splitlines() if s.strip()])
@@ -36,8 +37,7 @@ def import_lslib(dll_path:Path)->bool:
         import pythonnet
         pythonnet.load('coreclr')
         import clr
-        from System.Reflection import Assembly # type: ignore 
-        Assembly.LoadFrom(str(dll_path.absolute()))
+        sys.path.append(str(dll_path.parent.absolute()))
         clr.AddReference("LSLib") # type: ignore 
         return True
     except Exception as e:

@@ -1,6 +1,7 @@
 import os
 from pathlib import Path
 import argparse
+import sys
 
 import common
 script_name = Path(__file__).stem
@@ -24,8 +25,7 @@ def run(lslib_dll:Path, file_arg:Path, output_file:Path = None, in_type:str = ".
         import pythonnet
         pythonnet.load('coreclr')
         import clr
-        from System.Reflection import Assembly # type: ignore 
-        Assembly.LoadFrom(str(lslib_dll.absolute()))
+        sys.path.append(str(lslib_dll.parent.absolute()))
         clr.AddReference("LSLib") # type: ignore 
 
         from LSLib.LS import ResourceUtils, ResourceConversionParameters, ResourceLoadParameters # type: ignore 
