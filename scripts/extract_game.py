@@ -51,9 +51,10 @@ class Pak:
 class GameData:
     data_paks = [
         Pak("Assets").with_groups("Assets"),
-        Pak("DiceSet01").with_groups("Assets"),
-        Pak("DiceSet02").with_groups("Assets"),
-        Pak("DiceSet03").with_groups("Assets"),
+        Pak("DiceSet01").with_groups("Assets", "Mods"),
+        Pak("DiceSet02").with_groups("Assets", "Mods"),
+        Pak("DiceSet03").with_groups("Assets", "Mods"),
+        Pak("DiceSet06").with_groups("Assets", "Mods"),
         Pak("Effects").with_groups("Assets"),
         Pak("Engine").with_groups("Core"),
         Pak("EngineShaders").with_groups("Assets"),
@@ -77,6 +78,11 @@ class GameData:
         Pak("Gustav_Video").with_groups("Assets", "Large"),
         Pak("Localization\English").with_groups("Localization", "Core"),
     ]
+    
+    @staticmethod
+    def add_patches(data_dir:Path):
+        for f in data_dir.glob("Patch*.pak"):
+            GameData.data_paks.append(Pak(f.stem).with_groups("Core", "Patches"))
 
     @staticmethod
     async def extract_pak(f:Path, divine:Path, output:Path, debug:bool = False)->bool:
@@ -260,6 +266,7 @@ async def run():
         successes = 0
         errors = 0
 
+        GameData.add_patches(data_dir)
         pak_targets = GameData.get_targets(data_dir, target_groups, ignore_groups, specific_paks)
         total_paks = len(pak_targets)
         if total_paks == 0:
