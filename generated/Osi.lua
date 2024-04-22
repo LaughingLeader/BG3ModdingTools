@@ -359,9 +359,9 @@ function Osi.CombatIsActive(combatGuid) end
 function Osi.Concatenate(stringA, stringB) end
 
 ---@param string string
----@param guidString GUIDSTRING
+---@param gUIDstring GUIDSTRING
 ---@return string result
-function Osi.ConcatenateGUID(string, guidString) end
+function Osi.ConcatenateGUID(string, gUIDstring) end
 
 ---@param string string
 ---@param number integer
@@ -4091,10 +4091,12 @@ function Osi.SetHasOsirisDialog(speaker, hasOsirisDialog) end
 function Osi.SetHitpoints(entity, hp, healTypes) end
 
 ---@overload fun(entity:GUIDSTRING, percentage:number)
+---@overload fun(entity:GUIDSTRING, percentage:number, healTypes:string)
 ---@param entity GUIDSTRING
 ---@param percentage number
 ---@param healTypes string
-function Osi.SetHitpointsPercentage(entity, percentage, healTypes) end
+---@param onlyIfDifferentRounded integer
+function Osi.SetHitpointsPercentage(entity, percentage, healTypes, onlyIfDifferentRounded) end
 
 ---@param sourceFaction FACTION
 ---@param targetFaction FACTION
