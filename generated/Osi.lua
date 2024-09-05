@@ -155,6 +155,11 @@
 ---| `2` # Donate
 ---| `1` # Default
 
+---@alias JOINBLOCKTYPE
+---| `0` # None
+---| `1` # BlockNew
+---| `2` # BlockAll
+
 --#endregion
 
 if Osi == nil then Osi = {} end
@@ -367,6 +372,11 @@ function Osi.ConcatenateGUID(string, guidString) end
 ---@param number integer
 ---@return string result
 function Osi.ConcatenateInteger(string, number) end
+
+---@param stringA string
+---@param stringB string
+---@return string result
+function Osi.ConcatenateNewLine(stringA, stringB) end
 
 ---@param string string
 ---@param number number
@@ -706,9 +716,9 @@ function Osi.FindGossipWorld(character) end
 ---@return number validPositionZ
 function Osi.FindValidPosition(sourceX, sourceY, sourceZ, radius, object, avoidDangerousSurfaces) end
 
----@param gUIDstring GUIDSTRING
+---@param guidString GUIDSTRING
 ---@return string result
-function Osi.GUIDToString(gUIDstring) end
+function Osi.GUIDToString(guidString) end
 
 ---@param character CHARACTER
 ---@param attribute string
@@ -2738,6 +2748,9 @@ function Osi.DebugBreak(message) end
 ---@param flag integer
 function Osi.DebugDialogSkillCheck(flag) end
 
+---@param text string
+function Osi.DebugLog(text) end
+
 ---@param object GUIDSTRING
 ---@param text string
 function Osi.DebugText(object, text) end
@@ -2799,6 +2812,9 @@ function Osi.DialogAddActorAtReservedSlot(instanceID, actor, force, peanut, cons
 ---@param instanceID integer
 ---@param immediate integer
 function Osi.DialogRequestBehaviorGracefulStop(instanceID, immediate) end
+
+---@param speaker GUIDSTRING
+function Osi.DialogRequestSmoothStop(speaker) end
 
 ---@param speaker GUIDSTRING
 function Osi.DialogRequestStop(speaker) end
@@ -3326,13 +3342,6 @@ function Osi.MusicPlayGeneral(eventName) end
 ---@param eventName string
 function Osi.MusicPlayOnCharacter(character, eventName) end
 
----@param mysteryID string
-function Osi.MysteryClose(mysteryID) end
-
----@param mysteryID string
----@param mysteryStepID string
-function Osi.MysteryUpdate(mysteryID, mysteryStepID) end
-
 function Osi.NotifyCharacterCreationFinished() end
 
 function Osi.NotifyCharacterCreationSkipped() end
@@ -3347,6 +3356,10 @@ function Osi.ObjectQuestTimerLaunch(entity, timer, localizedTextKey, time2, shou
 ---@param object GUIDSTRING
 ---@param localizedTextKey string
 function Osi.ObjectSetTitle(object, localizedTextKey) end
+
+---@param object GUIDSTRING
+---@param isHide integer
+function Osi.ObjectSetTitleHidden(object, isHide) end
 
 ---@param entity GUIDSTRING
 ---@param timer string
@@ -3960,6 +3973,10 @@ function Osi.SetCharacterLootOwned(character, bool) end
 ---@param value integer
 function Osi.SetCharacterLootable(character, value) end
 
+---@param character GUIDSTRING
+---@param portrait GUIDSTRING
+function Osi.SetCharacterOnPortraitPainting(character, portrait) end
+
 ---@param target GUIDSTRING
 ---@param groupID string
 ---@param enemy GUIDSTRING
@@ -4135,6 +4152,9 @@ function Osi.SetIsInDangerZone(character, isInDangerZone) end
 ---@param entity GUIDSTRING
 ---@param eIsTradableType TRADABLETYPE
 function Osi.SetIsTradable(entity, eIsTradableType) end
+
+---@param joinBlockType JOINBLOCKTYPE
+function Osi.SetJoinBlock(joinBlockType) end
 
 ---@param item ITEM
 ---@param bool integer
@@ -4743,18 +4763,22 @@ function Osi.UnregisterAsCompanion(character) end
 function Osi.Use(character, item, useItem, isInteraction, event) end
 
 ---@overload fun(caster:GUIDSTRING, spellID:string, target:GUIDSTRING)
+---@overload fun(caster:GUIDSTRING, spellID:string, target:GUIDSTRING, target2:GUIDSTRING)
 ---@param caster GUIDSTRING
 ---@param spellID string
 ---@param target GUIDSTRING
 ---@param target2 GUIDSTRING
-function Osi.UseSpell(caster, spellID, target, target2) end
+---@param withoutMove integer
+function Osi.UseSpell(caster, spellID, target, target2, withoutMove) end
 
+---@overload fun(caster:GUIDSTRING, spellID:string, x:number, y:number, z:number)
 ---@param caster GUIDSTRING
 ---@param spellID string
 ---@param x number
 ---@param y number
 ---@param z number
-function Osi.UseSpellAtPosition(caster, spellID, x, y, z) end
+---@param withoutMove integer
+function Osi.UseSpellAtPosition(caster, spellID, x, y, z, withoutMove) end
 
 ---@param character CHARACTER
 ---@param count integer
