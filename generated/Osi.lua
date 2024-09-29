@@ -4108,10 +4108,12 @@ function Osi.SetHasOsirisDialog(speaker, hasOsirisDialog) end
 function Osi.SetHitpoints(entity, hp, healTypes) end
 
 ---@overload fun(entity:GUIDSTRING, percentage:number)
+---@overload fun(entity:GUIDSTRING, percentage:number, healTypes:string)
 ---@param entity GUIDSTRING
 ---@param percentage number
 ---@param healTypes string
-function Osi.SetHitpointsPercentage(entity, percentage, healTypes) end
+---@param onlyIfDifferentRounded integer
+function Osi.SetHitpointsPercentage(entity, percentage, healTypes, onlyIfDifferentRounded) end
 
 ---@param sourceFaction FACTION
 ---@param targetFaction FACTION

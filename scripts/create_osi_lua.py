@@ -55,18 +55,21 @@ enum_alias_template = """---@alias {name}
 {entries}
 """
 
-type_remap = {
-    1: "integer",
-    2: "integer",
-    3: "number",
-    4: "string",
-    5: "string"
+# These types are essentially synonymous, so we just use the lua type name instead
+name_remap = {
+    "INTEGER": "integer", # id 1
+    "REAL": "number", # id 3
+    "STRING": "string" # id 4
 }
 
-name_remap = {
-    "INTEGER": "integer",
-    "REAL": "number",
-    "STRING": "string"
+# A dictionary of all the base type IDs to their lua types. The starred ones are handled in this code by name_remap.
+# The unstarred types have no strict lua equivalent, so we alias them to the nearest lua type
+type_remap = {
+    1: "integer", # *INTEGER
+    2: "integer", # INTEGER64
+    3: "number", # *REAL
+    4: "string", # *STRING
+    5: "string" # GUIDSTRING
 }
 
 CustomAliases = {
@@ -89,11 +92,13 @@ CustomAliases = {
     ]
 }
 
+# dict<func_name, dict<arg_name, proper_type_string>>
 CustomFunctionTypes = {
     "GetEquippedItem": {"Slotname": "EQUIPMENTSLOTNAME"},
     "CharacterDisarmed": {"SlotName": "EQUIPMENTSLOTNAME"}
 }
 
+# For when the overload skips one or more arguments found in the "original"
 ManualOverloadFix = {
     "Die": {3: ["target:GUIDSTRING", "deathType:DEATHTYPE", "generateTreasure:integer"]},
     "QuestUpdate": {2: ["questID:string", "stateID:string"]}, # Applies to all DB_Players
@@ -105,6 +110,18 @@ ManualOverloadFix = {
 LuaManualRenaming = {
     "gUIDstring": "guidString",
     "slotname": "slotName",
+}
+
+# These functions have Procs with more variables than the Call. Only the additional arguments are given.
+# dict<func_name, dict<arg_idx, better_arg_name>>
+ProcExtensions = {
+    "SetHitpointsPercentage": {3: "onlyIfDifferentRounded"}
+}
+
+# The functions with these refs should not be output at all
+IgnoreProcs = {
+    "ItemMoveToPosition": 8, # deprecated, just calls the 7-arg version without the 8th
+    "ItemMoveTo": 7, # deprecated, just calls the 6-arg version without the 7th
 }
 
 types:dict[int, 'OsirisType'] = {}
@@ -139,6 +156,7 @@ class OsirisType:
             self.name = remap
             self.skip_export = True
     
+    # Has no uses (except by itself) in this repo atm
     def to_lua_type(self)->str:
         lua_type = type_remap.get(self.actual_id, "any")
         base_type = types.get(self.actual_id, None)
@@ -168,7 +186,8 @@ class FuncVariable:
             result = result.lower()
         if "_" in result:
             result = result.replace("_", "")
-        result = result[0].lower() + result[1:]
+        if result != "":
+            result = result[0].lower() + result[1:]
         renamed_result = LuaManualRenaming.get(result)
         if renamed_result:
             return renamed_result
@@ -186,6 +205,37 @@ class FuncVariable:
         if t:
             return t.name
         return "any"
+
+# boolean is ordinarily not a valid Osiris value, but it's returned by QRY_ functions
+@dataclass
+class BoolFuncVariable(FuncVariable):
+        
+    def export_type(self, func_name:str = "", type_override:OsirisType = None):
+        return "boolean"
+
+# These function variables can be nil instead (only for DB calls atm)
+@dataclass
+class OptionalFuncVariable(FuncVariable):
+        
+    def export_type(self, func_name:str = "", type_override:OsirisType = None):
+        t = super().export_type(func_name, type_override)
+        if t != "any":
+            t += "?"
+        return t
+
+# Represents an array of tuples, the closest known way to model the return value of DB Get functions
+@dataclass
+class TupleArrayFuncVariable(FuncVariable):
+    type:list[FuncVariable] = field(default_factory=list)
+        
+    def export_type(self, func_name:str = "", type_override:OsirisType = None):
+        if type_override:
+            raise ValueError("type_override is unsupported for this type")
+        t = "{"
+        for i in range(len(self.type)):
+            t += "{}[{}]: {}".format("" if i == 0 else ", ", i+1, self.type[i].export_type(func_name))
+        t += "}[]"
+        return t
 
 @dataclass
 class CallDefinition:
@@ -308,13 +358,30 @@ class QueryDefinition(CallDefinition):
         return template.format(params_doc = params_doc, 
             name = self.name, params_func = params_func, desc=self.description)
 
+@dataclass
+class DatabaseDefinition(CallDefinition):
+
+    def export(self):
+        params_doc = super().export()
+        params_doc += '\n'
+        params_as_opt = list(map(lambda x: OptionalFuncVariable(x.name, x.type), self.parameters))
+        params_doc += CallDefinition(self.name + ":Delete", params_as_opt).export()
+        params_doc += '\n'
+        ret_type = TupleArrayFuncVariable("", self.parameters)
+        params_doc += QueryDefinition(self.name + ":Get", params_as_opt, [ret_type]).export()
+        return params_doc
+
 name_to_type:dict[str, OsirisType] = {}
 
+# TODO: keep only the names here instead and index function_map?
 call_definitions:list[CallDefinition] = []
 query_definitions:list[QueryDefinition] = []
 event_definitions:list[CallDefinition] = []
+proc_definitions:list[CallDefinition] = []
+user_query_definitions:list[QueryDefinition] = []
+database_definitions:list[DatabaseDefinition] = []
 
-function_map:dict[str, CallDefinition|QueryDefinition] = {}
+function_map:dict[str, CallDefinition|QueryDefinition|DatabaseDefinition] = {}
 
 def get_param_type(match):
     t = name_to_type.get(match, None)
@@ -406,10 +473,11 @@ def get_types_export():
     enum_types = [x for x in types.values() if len(x.enum_values) > 0]
     alias_types = [x for x in types.values() if not x in base_types and not x in enum_types]
     
-    return ("\n".join([x.export_lua() for x in base_types if not x.skip_export]),
-            "\n".join([x.export_lua() for x in alias_types if not x.skip_export]),
-            "\n".join([x.export_lua() for x in enum_types if not x.skip_export]),
-            )
+    return (
+        "\n".join([x.export_lua() for x in base_types if not x.skip_export]),
+        "\n".join([x.export_lua() for x in alias_types if not x.skip_export]),
+        "\n".join([x.export_lua() for x in enum_types if not x.skip_export]),
+    )
 
 custom_alias_template = "---@alias {name} {values}"
 
@@ -452,7 +520,7 @@ if Osi == nil then Osi = {{}} end
         return target
 
     types_str,aliases_str,enums_str = get_types_export()
-    calls_str = "\n".join([x.export() for x in get_sorted(call_definitions)])
+    calls_str = "\n".join([function_map[x.name].export() for x in get_sorted(call_definitions)])
     queries_str = "\n".join([x.export() for x in get_sorted(query_definitions)])
     
     custom_aliases_str = "\n".join([dict_to_alias(k,v) for k,v in CustomAliases.items()])
@@ -461,20 +529,23 @@ if Osi == nil then Osi = {{}} end
     output_str = osi_template.format(types=types_str, aliases=aliases_str, enums=enums_str, queries=queries_str, calls=calls_str)
 
     export_file(output_path, output_str)
-    
-    if len(event_definitions) > 0:
-        events_str = ""
-        events = get_sorted(event_definitions)
-        for func in events:	
-            events_str += '\t{}\n'.format(func.export())
+
+    def export(defs, file):
+        defs_str = ""
+        for func in defs:	
+            defs_str += '{}\n'.format(func.export())
 
         output_str = f"""---@meta
----@diagnostics disable
+---@diagnostic disable
 
 if Osi == nil then Osi = {{}} end
-{events_str}"""
+{defs_str}"""
 
-        export_file(output_path.parent.joinpath("Osi.Events.lua"), output_str)
+        export_file(output_path.parent.joinpath(file), output_str)
+    
+    if len(event_definitions) > 0:
+        events = get_sorted(event_definitions)
+        export(events, "Osi.Events.lua")
         
         arity_entries = "\n".join([f"\t{x.name} = {len(x.parameters)}," for x in events])
         event_arity_output = f"""local EventArity = {{
@@ -482,30 +553,87 @@ if Osi == nil then Osi = {{}} end
 }}"""
         export_file(output_path.parent.joinpath("EventArity.lua"), event_arity_output)
 
-def run(header_file:Path, output_path:Path, osi_file:Path, lslib_dll:Path, do_sort:bool=False):
+    if len(proc_definitions) > 0:
+        export(proc_definitions, "Osi.PROC.lua")
+    
+    if len(user_query_definitions) > 0:
+        export(user_query_definitions, "Osi.QRY.lua")
+    
+    if len(database_definitions) > 0:
+        export(database_definitions, "Osi.DB.lua")
+
+def run(header_file:Path, output_path:Path, osi_file:Path, lslib_dll:Path, do_sort:bool=False, do_db:bool=False, do_extra:bool=False):
     print(f"Parsing header: {header_file}")
     with open(header_file.absolute()) as f:
         lines = f.readlines()
         for line in lines:
             process_line(line.strip())
     
-    if osi_file.exists() and lslib_dll.exists():
+    def convert_params(param_strs):
+        params = []
+        for i in range(len(param_strs)):
+            type_str = param_strs[i]
+            t = name_to_type.get(type_str)
+            if t:
+                params.append(FuncVariable(f"a{i}", t.id))
+            else:
+                params.append(BoolFuncVariable("", -1))
+        return params
+    
+    if do_db or do_extra or (osi_file.exists() and lslib_dll.exists()):
         print("Getting proc overloads from story.div.osi")
         story = extract_osiris.run(osi_file, lslib_dll, None, False)
-        if story != None:
-            for call in story.procs:
-                existing = function_map.get(call.name, None)
-                if existing and len(call.params) < len(existing.parameters):
-                    params = []
-                    for i in range(len(call.params)):
-                        type_str = call.params[i]
-                        t = name_to_type.get(type_str)
-                        params.append(FuncVariable(f"a{i}", t.id))
-                        
-                    existing.overloads.append(CallDefinition(existing.name, params))
+        if story == None:
+            raise AssertionError("extract_osiris.py did not error but did not return OsirisResults!")
+        print(f"Scanning {len(story.procs)} PROCs")
+        for call in story.procs:
+            if IgnoreProcs.get(call.name) == len(call.params):
+                continue
+
+            existing = function_map.get(call.name, None)
+            if existing or do_extra:
+                params = convert_params(call.params)
+                call_def = CallDefinition(call.name, params)
+                if existing:
+                    if len(call.params) < len(existing.parameters):
+                        existing.overloads.append(call_def)
+                    elif call.name in ProcExtensions:
+                        params = call_def.parameters
+                        for i in range(len(params)):
+                            if i < len(existing.parameters):
+                                if params[i].type != existing.parameters[i].type:
+                                    raise AssertionError(f"Move {call.name} from ProcExtensions to ManualOverloadFix: " +
+                                                         "types don't match the base!")
+                                params[i].name = existing.parameters[i].name
+                            elif i in ProcExtensions[call.name]:
+                                params[i].name = ProcExtensions[call.name][i]
+                        call_def.overloads = existing.overloads
+                        existing.overloads = {}
+                        call_def.overloads.append(existing)
+                        function_map[call.name] = call_def
+                    else:
+                        print('Please add overload with more parameters than "normal" to IgnoreRefs or ProcExtensions:',
+                              f"{len(call.params)} vs {len(existing.parameters)}: {call}")
+                elif do_extra:
+                    proc_definitions.append(call_def)
+        if do_extra:
+            print(f"Scanning {len(story.user_queries)} QRYs")
+            for qry in story.user_queries:
+                params = convert_params(qry.params)
+                out = convert_params(qry.return_params)
+                if len(out) == 0:
+                    out = {FuncVariable('', )}
+                user_query_definitions.append(QueryDefinition(qry.name, params, out))
+        if do_db:
+            print(f"Scanning {len(story.databases)} DBs")
+            for entry in story.databases:
+                params = convert_params(entry.params)
+                db = DatabaseDefinition(entry.name, params)
+                database_definitions.append(db)
+                function_map[db.name] = db
     else:
         print(f"--osi {osi_file} or --divine {lslib_dll} do not exist - skipping.")
-            
+    
     export(output_path, do_sort)
     print("Done!")
     print(output_path)
@@ -513,16 +641,18 @@ def run(header_file:Path, output_path:Path, osi_file:Path, lslib_dll:Path, do_so
 if __name__ == "__main__":
     default_output_path = Path(script_dir.parent.joinpath("generated/Osi.lua"))
     default_divine_path = common.get_lslib_path()
-
+    
     debug = True
     
     parser = argparse.ArgumentParser()
-    parser.add_argument("--header", type=Path, required=not debug, help="The path to a story_header.div file.")
-    parser.add_argument("-o", "--output", type=Path, default=default_output_path, help="The output file. Defaults to output/lua/Osi.lua")
+    parser.add_argument("--header", type=Path, required=not debug, default=Path(script_dir.parent.joinpath("references", "story_header.div")), help="The path to a story_header.div file.")
+    parser.add_argument("-o", "--output", type=Path, default=default_output_path, help="The output file. Defaults to generated/Osi.lua")
     parser.add_argument("--divine", type=Path, default=default_divine_path, help="The path to divine.exe. Only used if a story.div.osi is included.")
-    parser.add_argument("--osi", type=Path, help="The path to a save file or story.div.osi to extract Osiris data from. This is only used to generate function overloads for calls that also have procs defined.")
+    parser.add_argument("--osi", type=Path, help="The path to a save file or story.div.osi to extract Osiris data from.")
     parser.add_argument("--sort", default=False, action='store_true', help="Sort all function definitions alphabetically.")
-
+    parser.add_argument("--db", default=False, action='store_true', help="Whether to generate Osi.Databases.lua as well.")
+    parser.add_argument("--extra", default=False, action='store_true', help="Whether to generate files for PROC_s and QRY_s as well.")
+    
     parser.description = "Generate an lua annotations helper file, for Osi, from a story_header.div"
     new_line = "\n    "
     parser.usage = f"""
@@ -534,7 +664,6 @@ if __name__ == "__main__":
     if debug:
         #args.header = Path("G:/Modding/BG3/_Extracted/_Patches/Patch1/Mods/Gustav/Story/RawFiles/story_header.div")
         args.sort = True
-        args.header = Path(script_dir.parent.joinpath("references", "story_header.div"))
         args.osi = Path(script_dir.parent.joinpath("references", "story.div.osi"))
     
     header_file:Path = args.header
@@ -542,4 +671,6 @@ if __name__ == "__main__":
     osi_file:Path = args.osi
     lslib_dll:Path = args.divine.is_dir() and args.divine.joinpath("LSLib.dll") or args.divine.parent.joinpath("LSLib.dll")
     do_sort:bool = args.sort == True
-    run(header_file, output_path, osi_file, lslib_dll, do_sort)
+    do_db:bool = args.db == True
+    do_extra:bool = args.extra == True
+    run(header_file, output_path, osi_file, lslib_dll, do_sort, do_db, do_extra)
