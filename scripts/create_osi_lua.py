@@ -102,6 +102,11 @@ ManualOverloadFix = {
     "Use": {3: ["character:CHARACTER", "item:ITEM", "event:string"]},
 }
 
+LuaManualRenaming = {
+    "gUIDstring": "guidString",
+    "slotname": "slotName",
+}
+
 types:dict[int, 'OsirisType'] = {}
 
 def is_guid_alias(a,b):
@@ -164,8 +169,9 @@ class FuncVariable:
         if "_" in result:
             result = result.replace("_", "")
         result = result[0].lower() + result[1:]
-        if result == "slotname":
-            result = "slotName"
+        renamed_result = LuaManualRenaming.get(result)
+        if renamed_result:
+            return renamed_result
         return result
         
     def export_type(self, func_name:str = "", type_override:OsirisType = None):
