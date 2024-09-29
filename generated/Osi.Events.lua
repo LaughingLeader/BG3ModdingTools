@@ -316,7 +316,7 @@ function Osi.DeathSaveStable(character) end
 ---@param entity GUIDSTRING
 ---@param newDeathType DEATHTYPE
 function Osi.DeathTypeChanged(entity, newDeathType) end
-	
+
 ---@param item ITEM
 ---@param destroyer CHARACTER
 ---@param destroyerOwner CHARACTER
@@ -399,7 +399,7 @@ function Osi.DisappearOutOfSightToCancelled(character, moveID) end
 ---@param toObject GUIDSTRING
 ---@param donatedObjectValue integer
 function Osi.Donated(donatedObject, fromObject, toObject, donatedObjectValue) end
-	
+
 ---@param itemTemplate ITEMROOT
 ---@param item2 ITEM
 ---@param character CHARACTER
@@ -637,7 +637,7 @@ function Osi.LeftTrigger(character, trigger) end
 ---@param levelName string
 ---@param isEditorMode integer
 function Osi.LevelGameplayReady(levelName, isEditorMode) end
-	
+
 ---@param levelName string
 ---@param isEditorMode integer
 function Osi.LevelGameplayStarted(levelName, isEditorMode) end
@@ -970,7 +970,7 @@ function Osi.RespecCancelled(character) end
 
 ---@param character CHARACTER
 function Osi.RespecCompleted(character) end
-	
+
 function Osi.RestorePartyFinished() end
 
 ---@param character CHARACTER

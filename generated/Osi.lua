@@ -364,9 +364,9 @@ function Osi.CombatIsActive(combatGuid) end
 function Osi.Concatenate(stringA, stringB) end
 
 ---@param string string
----@param gUIDstring GUIDSTRING
+---@param guidString GUIDSTRING
 ---@return string result
-function Osi.ConcatenateGUID(string, gUIDstring) end
+function Osi.ConcatenateGUID(string, guidString) end
 
 ---@param string string
 ---@param number integer
