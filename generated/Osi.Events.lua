@@ -1,5 +1,5 @@
 ---@meta
----@diagnostic disable
+---@diagnostics disable
 
 if Osi == nil then Osi = {} end
 
@@ -254,6 +254,9 @@ function Osi.CombatRoundStarted(combatGuid, round) end
 
 ---@param combatGuid GUIDSTRING
 function Osi.CombatStarted(combatGuid) end
+
+---@param object GUIDSTRING
+function Osi.CombatTurnTimedOut(object) end
 
 ---@param item1 ITEM
 ---@param item2 ITEM
@@ -851,10 +854,22 @@ function Osi.PuzzleUIUsed(character, uIInstance, type, command, elementId) end
 
 ---@param character CHARACTER
 ---@param questID string
+function Osi.QuestAcceptReverted(character, questID) end
+
+---@param character CHARACTER
+---@param questID string
 function Osi.QuestAccepted(character, questID) end
 
 ---@param questID string
+function Osi.QuestCloseReverted(questID) end
+
+---@param questID string
 function Osi.QuestClosed(questID) end
+
+---@param character CHARACTER
+---@param topLevelQuestID string
+---@param stateID string
+function Osi.QuestUpdateUnlockReverted(character, topLevelQuestID, stateID) end
 
 ---@param character CHARACTER
 ---@param topLevelQuestID string
@@ -1145,6 +1160,11 @@ function Osi.StoppedLockpicking(character, item) end
 
 ---@param character CHARACTER
 function Osi.StoppedSneaking(character) end
+
+---@param character CHARACTER
+---@param subQuestID string
+---@param stateID string
+function Osi.SubQuestUpdateUnlockReverted(character, subQuestID, stateID) end
 
 ---@param character CHARACTER
 ---@param subQuestID string

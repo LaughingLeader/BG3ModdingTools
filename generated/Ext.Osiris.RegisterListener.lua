@@ -58,6 +58,7 @@ if Ext == nil then Ext = {} end
 ---@alias OsirisCombatResumedCallback fun(combatGuid:GUIDSTRING)
 ---@alias OsirisCombatRoundStartedCallback fun(combatGuid:GUIDSTRING, round:integer)
 ---@alias OsirisCombatStartedCallback fun(combatGuid:GUIDSTRING)
+---@alias OsirisCombatTurnTimedOutCallback fun(object:GUIDSTRING)
 ---@alias OsirisCombinedCallback fun(item1:ITEM, item2:ITEM, item3:ITEM, item4:ITEM, item5:ITEM, character:CHARACTER, newItem:ITEM)
 ---@alias OsirisCompanionSelectedForUserCallback fun(character:CHARACTER, userID:integer)
 ---@alias OsirisCreditsEndedCallback fun()
@@ -191,8 +192,11 @@ if Ext == nil then Ext = {} end
 ---@alias OsirisPreMovedByCallback fun(item:ITEM, character:CHARACTER)
 ---@alias OsirisPuzzleUIClosedCallback fun(character:CHARACTER, uIInstance:string, type:integer)
 ---@alias OsirisPuzzleUIUsedCallback fun(character:CHARACTER, uIInstance:string, type:integer, command:string, elementId:integer)
+---@alias OsirisQuestAcceptRevertedCallback fun(character:CHARACTER, questID:string)
 ---@alias OsirisQuestAcceptedCallback fun(character:CHARACTER, questID:string)
+---@alias OsirisQuestCloseRevertedCallback fun(questID:string)
 ---@alias OsirisQuestClosedCallback fun(questID:string)
+---@alias OsirisQuestUpdateUnlockRevertedCallback fun(character:CHARACTER, topLevelQuestID:string, stateID:string)
 ---@alias OsirisQuestUpdateUnlockedCallback fun(character:CHARACTER, topLevelQuestID:string, stateID:string)
 ---@alias OsirisQueuePurgedCallback fun(object:GUIDSTRING)
 ---@alias OsirisRandomCastProcessedCallback fun(caster:GUIDSTRING, storyActionID:integer, spellID:string, rollResult:integer, randomCastDC:integer)
@@ -257,6 +261,7 @@ if Ext == nil then Ext = {} end
 ---@alias OsirisStoppedDisarmingTrapCallback fun(character:CHARACTER, item:ITEM)
 ---@alias OsirisStoppedLockpickingCallback fun(character:CHARACTER, item:ITEM)
 ---@alias OsirisStoppedSneakingCallback fun(character:CHARACTER)
+---@alias OsirisSubQuestUpdateUnlockRevertedCallback fun(character:CHARACTER, subQuestID:string, stateID:string)
 ---@alias OsirisSubQuestUpdateUnlockedCallback fun(character:CHARACTER, subQuestID:string, stateID:string)
 ---@alias OsirisSupplyTemplateSpentCallback fun(templateId:GUIDSTRING, amount:integer)
 ---@alias OsirisSwarmAIGroupJoinedCallback fun(object:GUIDSTRING, group:string)
@@ -379,6 +384,7 @@ if Ext == nil then Ext = {} end
 ---@field RegisterListener fun(id:"CombatResumed", arity:1, eventType:OsirisEventType, callback:OsirisCombatResumedCallback):integer
 ---@field RegisterListener fun(id:"CombatRoundStarted", arity:2, eventType:OsirisEventType, callback:OsirisCombatRoundStartedCallback):integer
 ---@field RegisterListener fun(id:"CombatStarted", arity:1, eventType:OsirisEventType, callback:OsirisCombatStartedCallback):integer
+---@field RegisterListener fun(id:"CombatTurnTimedOut", arity:1, eventType:OsirisEventType, callback:OsirisCombatTurnTimedOutCallback):integer
 ---@field RegisterListener fun(id:"Combined", arity:7, eventType:OsirisEventType, callback:OsirisCombinedCallback):integer
 ---@field RegisterListener fun(id:"CompanionSelectedForUser", arity:2, eventType:OsirisEventType, callback:OsirisCompanionSelectedForUserCallback):integer
 ---@field RegisterListener fun(id:"CreditsEnded", arity:0, eventType:OsirisEventType, callback:OsirisCreditsEndedCallback):integer
@@ -512,8 +518,11 @@ if Ext == nil then Ext = {} end
 ---@field RegisterListener fun(id:"PreMovedBy", arity:2, eventType:OsirisEventType, callback:OsirisPreMovedByCallback):integer
 ---@field RegisterListener fun(id:"PuzzleUIClosed", arity:3, eventType:OsirisEventType, callback:OsirisPuzzleUIClosedCallback):integer
 ---@field RegisterListener fun(id:"PuzzleUIUsed", arity:5, eventType:OsirisEventType, callback:OsirisPuzzleUIUsedCallback):integer
+---@field RegisterListener fun(id:"QuestAcceptReverted", arity:2, eventType:OsirisEventType, callback:OsirisQuestAcceptRevertedCallback):integer
 ---@field RegisterListener fun(id:"QuestAccepted", arity:2, eventType:OsirisEventType, callback:OsirisQuestAcceptedCallback):integer
+---@field RegisterListener fun(id:"QuestCloseReverted", arity:1, eventType:OsirisEventType, callback:OsirisQuestCloseRevertedCallback):integer
 ---@field RegisterListener fun(id:"QuestClosed", arity:1, eventType:OsirisEventType, callback:OsirisQuestClosedCallback):integer
+---@field RegisterListener fun(id:"QuestUpdateUnlockReverted", arity:3, eventType:OsirisEventType, callback:OsirisQuestUpdateUnlockRevertedCallback):integer
 ---@field RegisterListener fun(id:"QuestUpdateUnlocked", arity:3, eventType:OsirisEventType, callback:OsirisQuestUpdateUnlockedCallback):integer
 ---@field RegisterListener fun(id:"QueuePurged", arity:1, eventType:OsirisEventType, callback:OsirisQueuePurgedCallback):integer
 ---@field RegisterListener fun(id:"RandomCastProcessed", arity:5, eventType:OsirisEventType, callback:OsirisRandomCastProcessedCallback):integer
@@ -578,6 +587,7 @@ if Ext == nil then Ext = {} end
 ---@field RegisterListener fun(id:"StoppedDisarmingTrap", arity:2, eventType:OsirisEventType, callback:OsirisStoppedDisarmingTrapCallback):integer
 ---@field RegisterListener fun(id:"StoppedLockpicking", arity:2, eventType:OsirisEventType, callback:OsirisStoppedLockpickingCallback):integer
 ---@field RegisterListener fun(id:"StoppedSneaking", arity:1, eventType:OsirisEventType, callback:OsirisStoppedSneakingCallback):integer
+---@field RegisterListener fun(id:"SubQuestUpdateUnlockReverted", arity:3, eventType:OsirisEventType, callback:OsirisSubQuestUpdateUnlockRevertedCallback):integer
 ---@field RegisterListener fun(id:"SubQuestUpdateUnlocked", arity:3, eventType:OsirisEventType, callback:OsirisSubQuestUpdateUnlockedCallback):integer
 ---@field RegisterListener fun(id:"SupplyTemplateSpent", arity:2, eventType:OsirisEventType, callback:OsirisSupplyTemplateSpentCallback):integer
 ---@field RegisterListener fun(id:"SwarmAIGroupJoined", arity:2, eventType:OsirisEventType, callback:OsirisSwarmAIGroupJoinedCallback):integer

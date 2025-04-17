@@ -560,7 +560,7 @@ if Osi == nil then Osi = {{}} end
         events_func_str = ""
         events = get_sorted(event_definitions)
         for func in events:
-            events_func_str += f"\t{func.export()}\n"
+            events_func_str += f"{func.export()}\n"
             field_str = f"---@field RegisterListener fun(id:\"{func.name}\", arity:{len(func.parameters)}, eventType:OsirisEventType, callback:Osiris{func.name}Callback):integer"
             events_str += f"{field_str}\n"
             events_callbacks_str += '{}\n'.format(func.export_alias())

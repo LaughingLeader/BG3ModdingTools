@@ -1225,6 +1225,10 @@ function Osi.GetSwarmGroup(target) end
 ---@return integer powers
 function Osi.GetTadpolePowersCount(character) end
 
+---@param target GUIDSTRING
+---@return string technicalName
+function Osi.GetTechnicalName(target) end
+
 ---@param item ITEM
 ---@return ITEM teleportTarget
 function Osi.GetTeleportTarget(item) end
@@ -2204,12 +2208,6 @@ function Osi.WasTutorialCompletedForUser(userID) end
 
 function Osi.ActOver() end
 
----@param levelTemplate LEVELTEMPLATE
-function Osi.ActivatePersistentLevelTemplate(levelTemplate) end
-
----@param levelTemplate LEVELTEMPLATE
-function Osi.ActivatePersistentLevelTemplateWithCombat(levelTemplate) end
-
 ---@overload fun(player:CHARACTER, trader:CHARACTER, canSell:integer)
 ---@overload fun(player:CHARACTER, trader:CHARACTER, canSell:integer, tradeMode:TRADEMODE)
 ---@param player CHARACTER
@@ -2376,6 +2374,10 @@ function Osi.AppearOutOfSightTo(character, target, directionFrom, playSpawn, cus
 ---@param appearedEvent string
 ---@param preventTeleportOnFailure integer
 function Osi.AppearOutOfSightToPosition(character, x, y, z, directionFrom, playSpawn, customSpawnAnimation, appearedEvent, preventTeleportOnFailure) end
+
+---@param targetObject GUIDSTRING
+---@param sourceObject GUIDSTRING
+function Osi.AppendShapeshiftStates(targetObject, sourceObject) end
 
 ---@overload fun(object:GUIDSTRING, damage:integer, damageType:string)
 ---@param object GUIDSTRING
@@ -3574,6 +3576,11 @@ function Osi.QuestUpdate(character, questID, stateID) end
 ---@param messageId string
 ---@param deltaUpdateAmount integer
 function Osi.QuestUpdateMessageCounter(messageId, deltaUpdateAmount) end
+
+---@param character CHARACTER
+---@param questID string
+---@param stateID string
+function Osi.QuestUpdateRevert(character, questID, stateID) end
 
 ---@param eventId string
 function Osi.ReadyCheckCancel(eventId) end
