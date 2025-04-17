@@ -1,0 +1,643 @@
+---@meta
+---@diagnostics disable
+
+if Ext == nil then Ext = {} end
+
+-- #region Callbacks
+---@alias OsirisActivatedCallback fun(object:GUIDSTRING)
+---@alias OsirisActorSpeakerIndexChangedCallback fun(instanceID:integer, player:GUIDSTRING, oldIndex:integer, newIndex:integer)
+---@alias OsirisAddedToCallback fun(object:GUIDSTRING, inventoryHolder:GUIDSTRING, addType:string)
+---@alias OsirisAllLoadedFlagsInPresetReceivedEventCallback fun()
+---@alias OsirisAnimationEventCallback fun(object:GUIDSTRING, eventName:string, wasFromLoad:integer)
+---@alias OsirisAppearTeleportFailedCallback fun(character:CHARACTER, appearEvent:string)
+---@alias OsirisApprovalRatingChangeAttemptCallback fun(ratingOwner:CHARACTER, ratedEntity:CHARACTER, attemptedApprovalChange:integer, clampedApprovalChange:integer, newApproval:integer)
+---@alias OsirisApprovalRatingChangedCallback fun(ratingOwner:CHARACTER, ratedEntity:CHARACTER, newApproval:integer)
+---@alias OsirisArmedTrapUsedCallback fun(character:CHARACTER, item:ITEM)
+---@alias OsirisArmorSetChangedCallback fun(character:CHARACTER, eArmorSet:ARMOURSET)
+---@alias OsirisAttachedToPartyGroupCallback fun(character:CHARACTER)
+---@alias OsirisAttackedByCallback fun(defender:GUIDSTRING, attackerOwner:GUIDSTRING, attacker2:GUIDSTRING, damageType:string, damageAmount:integer, damageCause:string, storyActionID:integer)
+---@alias OsirisAttemptedDisarmCallback fun(disarmableItem:ITEM, character:CHARACTER, itemUsedToDisarm:ITEM, bool:integer)
+---@alias OsirisAutomatedDialogEndedCallback fun(dialog:DIALOGRESOURCE, instanceID:integer)
+---@alias OsirisAutomatedDialogForceStoppingCallback fun(dialog:DIALOGRESOURCE, instanceID:integer)
+---@alias OsirisAutomatedDialogRequestFailedCallback fun(dialog:DIALOGRESOURCE, instanceID:integer)
+---@alias OsirisAutomatedDialogStartedCallback fun(dialog:DIALOGRESOURCE, instanceID:integer)
+---@alias OsirisBackgroundGoalFailedCallback fun(character:CHARACTER, goal:GUIDSTRING)
+---@alias OsirisBackgroundGoalRewardedCallback fun(character:CHARACTER, goal:GUIDSTRING)
+---@alias OsirisBaseFactionChangedCallback fun(target:CHARACTER, oldFaction:FACTION, newFaction:FACTION)
+---@alias OsirisCameraReachedNodeCallback fun(spline:SPLINE, character:CHARACTER, event:string, index:integer, last:integer)
+---@alias OsirisCanBeLootedCapabilityChangedCallback fun(lootingTarget:GUIDSTRING, canBeLooted:integer)
+---@alias OsirisCastSpellCallback fun(caster:GUIDSTRING, spell:string, spellType:string, spellElement:string, storyActionID:integer)
+---@alias OsirisCastSpellFailedCallback fun(caster:GUIDSTRING, spell:string, spellType:string, spellElement:string, storyActionID:integer)
+---@alias OsirisCastedSpellCallback fun(caster:GUIDSTRING, spell:string, spellType:string, spellElement:string, storyActionID:integer)
+---@alias OsirisChangeAppearanceCancelledCallback fun(character:CHARACTER)
+---@alias OsirisChangeAppearanceCompletedCallback fun(character:CHARACTER)
+---@alias OsirisCharacterCreationFinishedCallback fun()
+---@alias OsirisCharacterCreationStartedCallback fun()
+---@alias OsirisCharacterDisarmedCallback fun(character:CHARACTER, item:ITEM, slotName:EQUIPMENTSLOTNAME)
+---@alias OsirisCharacterJoinedPartyCallback fun(character:CHARACTER)
+---@alias OsirisCharacterLeftPartyCallback fun(character:CHARACTER)
+---@alias OsirisCharacterLoadedInPresetCallback fun(character:CHARACTER)
+---@alias OsirisCharacterLootedCharacterCallback fun(player:CHARACTER, lootedCharacter:CHARACTER)
+---@alias OsirisCharacterMadePlayerCallback fun(character:CHARACTER)
+---@alias OsirisCharacterMoveFailedUseJumpCallback fun(character:CHARACTER)
+---@alias OsirisCharacterMoveToAndTalkFailedCallback fun(character:CHARACTER, target:GUIDSTRING, moveID:string, failureReason:string)
+---@alias OsirisCharacterMoveToAndTalkRequestDialogCallback fun(character:CHARACTER, target:GUIDSTRING, dialog:DIALOGRESOURCE, moveID:string)
+---@alias OsirisCharacterMoveToCancelledCallback fun(character:CHARACTER, moveID:integer)
+---@alias OsirisCharacterOnCrimeSensibleActionNotificationCallback fun(character:CHARACTER, crimeRegion:string, crimeID:integer, priortiyName:string, primaryDialog:DIALOGRESOURCE, criminal1:CHARACTER, criminal2:CHARACTER, criminal3:CHARACTER, criminal4:CHARACTER, isPrimary:integer)
+---@alias OsirisCharacterPickpocketFailedCallback fun(player:CHARACTER, npc:CHARACTER)
+---@alias OsirisCharacterPickpocketSuccessCallback fun(player:CHARACTER, npc:CHARACTER, item:ITEM, itemTemplate:GUIDSTRING, amount:integer, goldValue:integer)
+---@alias OsirisCharacterReservedUserIDChangedCallback fun(character:CHARACTER, oldUserID:integer, newUserID:integer)
+---@alias OsirisCharacterSelectedAsBestUnavailableFallbackLeadCallback fun(character:CHARACTER, crimeRegion:string, unavailableForCrimeID:integer, busyCrimeID:integer)
+---@alias OsirisCharacterSelectedClimbOnCallback fun(character:CHARACTER)
+---@alias OsirisCharacterSelectedForUserCallback fun(character:CHARACTER, userID:integer)
+---@alias OsirisCharacterStoleItemCallback fun(character:CHARACTER, item:ITEM, itemRootTemplate:GUIDSTRING, x:number, y:number, z:number, oldOwner:CHARACTER, srcContainer:ITEM, amount:integer, goldValue:integer)
+---@alias OsirisCharacterTagEventCallback fun(character:CHARACTER, tag:TAG, event:string)
+---@alias OsirisClosedCallback fun(item:ITEM)
+---@alias OsirisCombatEndedCallback fun(combatGuid:GUIDSTRING)
+---@alias OsirisCombatPausedCallback fun(combatGuid:GUIDSTRING)
+---@alias OsirisCombatResumedCallback fun(combatGuid:GUIDSTRING)
+---@alias OsirisCombatRoundStartedCallback fun(combatGuid:GUIDSTRING, round:integer)
+---@alias OsirisCombatStartedCallback fun(combatGuid:GUIDSTRING)
+---@alias OsirisCombinedCallback fun(item1:ITEM, item2:ITEM, item3:ITEM, item4:ITEM, item5:ITEM, character:CHARACTER, newItem:ITEM)
+---@alias OsirisCompanionSelectedForUserCallback fun(character:CHARACTER, userID:integer)
+---@alias OsirisCreditsEndedCallback fun()
+---@alias OsirisCrimeDisabledCallback fun(character:CHARACTER, crime:string)
+---@alias OsirisCrimeEnabledCallback fun(character:CHARACTER, crime:string)
+---@alias OsirisCrimeIsRegisteredCallback fun(victim:CHARACTER, crimeType:string, crimeID:integer, evidence:GUIDSTRING, criminal1:CHARACTER, criminal2:CHARACTER, criminal3:CHARACTER, criminal4:CHARACTER)
+---@alias OsirisCrimeProcessingStartedCallback fun(crimeID:integer, actedOnImmediately:integer)
+---@alias OsirisCriticalHitByCallback fun(defender:CHARACTER, attackOwner:CHARACTER, attacker:CHARACTER, storyActionID:integer)
+---@alias OsirisCustomBookUIClosedCallback fun(character:CHARACTER, bookName:string)
+---@alias OsirisDLCUpdatedCallback fun(dlc:DLC, userID:integer, installed:integer)
+---@alias OsirisDeactivatedCallback fun(object:GUIDSTRING)
+---@alias OsirisDeathSaveStableCallback fun(character:CHARACTER)
+---@alias OsirisDeathTypeChangedCallback fun(entity:GUIDSTRING, newDeathType:DEATHTYPE)
+---@alias OsirisDestroyedByCallback fun(item:ITEM, destroyer:CHARACTER, destroyerOwner:CHARACTER, storyActionID:integer)
+---@alias OsirisDestroyingByCallback fun(item:ITEM, destroyer:CHARACTER, destroyerOwner:CHARACTER, storyActionID:integer)
+---@alias OsirisDetachedFromPartyGroupCallback fun(character:CHARACTER)
+---@alias OsirisDialogActorJoinFailedCallback fun(dialog:DIALOGRESOURCE, instanceID:integer, actor:GUIDSTRING)
+---@alias OsirisDialogActorJoinedCallback fun(dialog:DIALOGRESOURCE, instanceID:integer, actor:GUIDSTRING, speakerIndex:integer)
+---@alias OsirisDialogActorLeftCallback fun(dialog:DIALOGRESOURCE, instanceID:integer, actor:GUIDSTRING, instanceEnded:integer)
+---@alias OsirisDialogAttackRequestedCallback fun(target:CHARACTER, player:CHARACTER)
+---@alias OsirisDialogEndedCallback fun(dialog:DIALOGRESOURCE, instanceID:integer)
+---@alias OsirisDialogForceStoppingCallback fun(dialog:DIALOGRESOURCE, instanceID:integer)
+---@alias OsirisDialogRequestFailedCallback fun(dialog:DIALOGRESOURCE, instanceID:integer)
+---@alias OsirisDialogRollResultCallback fun(character:CHARACTER, success:integer, dialog:DIALOGRESOURCE, isDetectThoughts:integer, criticality:CRITICALITYTYPE)
+---@alias OsirisDialogStartRequestedCallback fun(target:GUIDSTRING, player:GUIDSTRING)
+---@alias OsirisDialogStartedCallback fun(dialog:DIALOGRESOURCE, instanceID:integer)
+---@alias OsirisDialogueCapabilityChangedCallback fun(character:CHARACTER, isEnabled:integer)
+---@alias OsirisDiedCallback fun(character:CHARACTER)
+---@alias OsirisDifficultyChangedCallback fun(difficultyLevel:integer)
+---@alias OsirisDisappearOutOfSightToCancelledCallback fun(character:CHARACTER, moveID:integer)
+---@alias OsirisDonatedCallback fun(donatedObject:ITEM, fromObject:GUIDSTRING, toObject:GUIDSTRING, donatedObjectValue:integer)
+---@alias OsirisDoorTemplateClosingCallback fun(itemTemplate:ITEMROOT, item2:ITEM, character:CHARACTER)
+---@alias OsirisDownedChangedCallback fun(character:CHARACTER, isDowned:integer)
+---@alias OsirisDroppedByCallback fun(object:GUIDSTRING, mover:CHARACTER)
+---@alias OsirisDualEntityEventCallback fun(object1:GUIDSTRING, object2:GUIDSTRING, event:string)
+---@alias OsirisDyingCallback fun(character:CHARACTER)
+---@alias OsirisEndTheDayRequestedCallback fun(character:CHARACTER)
+---@alias OsirisEnterCombatFailedCallback fun(opponentLeft:GUIDSTRING, opponentRight:GUIDSTRING)
+---@alias OsirisEnteredChasmCallback fun(object:GUIDSTRING, cause:GUIDSTRING, chasm:GUIDSTRING, fallbackPosX:number, fallbackPosY:number, fallbackPosZ:number)
+---@alias OsirisEnteredCombatCallback fun(object:GUIDSTRING, combatGuid:GUIDSTRING)
+---@alias OsirisEnteredForceTurnBasedCallback fun(object:GUIDSTRING)
+---@alias OsirisEnteredLevelCallback fun(object:GUIDSTRING, objectRootTemplate:ROOT, level:string)
+---@alias OsirisEnteredSharedForceTurnBasedCallback fun(object:GUIDSTRING, zoneId:GUIDSTRING)
+---@alias OsirisEnteredTriggerCallback fun(character:CHARACTER, trigger:TRIGGER)
+---@alias OsirisEntityEventCallback fun(object:GUIDSTRING, event:string)
+---@alias OsirisEquipFailedCallback fun(item:ITEM, character:CHARACTER)
+---@alias OsirisEquippedCallback fun(item:ITEM, character:CHARACTER)
+---@alias OsirisEscortGroupLeaderChangedCallback fun(oldLeader:GUIDSTRING, newLeader:GUIDSTRING, group:string)
+---@alias OsirisFailedToLoadItemInPresetCallback fun(character:CHARACTER, originalItem:ITEM, level:string, newItem:ITEM)
+---@alias OsirisFallingCallback fun(entity:GUIDSTRING, cause:GUIDSTRING)
+---@alias OsirisFellCallback fun(entity:GUIDSTRING, cause:GUIDSTRING)
+---@alias OsirisFlagClearedCallback fun(flag:FLAG, speaker:GUIDSTRING, dialogInstance:integer)
+---@alias OsirisFlagLoadedInPresetEventCallback fun(object:GUIDSTRING, flag:FLAG)
+---@alias OsirisFlagSetCallback fun(flag:FLAG, speaker:GUIDSTRING, dialogInstance:integer)
+---@alias OsirisFleeFromCombatCallback fun(participant:GUIDSTRING, combatGuid:GUIDSTRING)
+---@alias OsirisFollowerCantUseItemCallback fun(character:CHARACTER)
+---@alias OsirisForceDismissCompanionCallback fun(companion:CHARACTER)
+---@alias OsirisForceMoveEndedCallback fun(source:GUIDSTRING, target:GUIDSTRING, storyActionID:integer)
+---@alias OsirisForceMoveStartedCallback fun(source:GUIDSTRING, target:GUIDSTRING, storyActionID:integer)
+---@alias OsirisGainedControlCallback fun(target:CHARACTER)
+---@alias OsirisGameBookInterfaceClosedCallback fun(item:ITEM, character:CHARACTER)
+---@alias OsirisGameModeStartedCallback fun(gameMode:string, isEditorMode:integer, isStoryReload:integer)
+---@alias OsirisGameOptionCallback fun(key:string, value:string)
+---@alias OsirisGoldChangedCallback fun(inventoryHolder:GUIDSTRING, changeAmount:integer)
+---@alias OsirisGotUpCallback fun(target:CHARACTER)
+---@alias OsirisHappyWithDealCallback fun(character:CHARACTER, trader:CHARACTER, characterValue:integer, traderValue:integer)
+---@alias OsirisHenchmanAbortedCallback fun(player:CHARACTER)
+---@alias OsirisHenchmanSelectedCallback fun(player:CHARACTER, hireling:CHARACTER)
+---@alias OsirisHitProxyCallback fun(proxy:GUIDSTRING, target:GUIDSTRING, attackerOwner:GUIDSTRING, attacker2:GUIDSTRING, storyActionID:integer)
+---@alias OsirisHitpointsChangedCallback fun(entity:GUIDSTRING, percentage:number)
+---@alias OsirisInstanceDialogChangedCallback fun(instanceID:integer, oldDialog:DIALOGRESOURCE, newDialog:DIALOGRESOURCE, oldDialogStopping:integer)
+---@alias OsirisInteractionCapabilityChangedCallback fun(character:CHARACTER, isEnabled:integer)
+---@alias OsirisInteractionFallbackCallback fun(character:CHARACTER, item:ITEM)
+---@alias OsirisInventoryBoundChangedCallback fun(item:ITEM, isBoundToInventory:integer)
+---@alias OsirisInventorySharingChangedCallback fun(character:CHARACTER, sharingEnabled:integer)
+---@alias OsirisItemEnteredTriggerCallback fun(item:ITEM, trigger:TRIGGER, mover:GUIDSTRING)
+---@alias OsirisItemLeftTriggerCallback fun(item:ITEM, trigger:TRIGGER, mover:GUIDSTRING)
+---@alias OsirisItemTeleportedCallback fun(target:ITEM, oldX:number, oldY:number, oldZ:number, newX:number, newY:number, newZ:number)
+---@alias OsirisKilledByCallback fun(defender:CHARACTER, attackOwner:GUIDSTRING, attacker:GUIDSTRING, storyActionID:integer)
+---@alias OsirisLearnedSpellCallback fun(character:CHARACTER, spell:string)
+---@alias OsirisLeftCombatCallback fun(object:GUIDSTRING, combatGuid:GUIDSTRING)
+---@alias OsirisLeftForceTurnBasedCallback fun(object:GUIDSTRING)
+---@alias OsirisLeftLevelCallback fun(object:GUIDSTRING, level:string)
+---@alias OsirisLeftTriggerCallback fun(character:CHARACTER, trigger:TRIGGER)
+---@alias OsirisLevelGameplayReadyCallback fun(levelName:string, isEditorMode:integer)
+---@alias OsirisLevelGameplayStartedCallback fun(levelName:string, isEditorMode:integer)
+---@alias OsirisLevelLoadedCallback fun(newLevel:string)
+---@alias OsirisLevelTemplateLoadedCallback fun(levelTemplate:LEVELTEMPLATE)
+---@alias OsirisLevelUnloadingCallback fun(level:string)
+---@alias OsirisLeveledUpCallback fun(character:CHARACTER)
+---@alias OsirisLongRestCancelledCallback fun()
+---@alias OsirisLongRestFinishedCallback fun()
+---@alias OsirisLongRestStartFailedCallback fun()
+---@alias OsirisLongRestStartedCallback fun()
+---@alias OsirisLostSightOfCallback fun(character:CHARACTER, targetCharacter:CHARACTER)
+---@alias OsirisMainPerformerStartedCallback fun(character:CHARACTER, event:string)
+---@alias OsirisMessageBoxChoiceClosedCallback fun(character:CHARACTER, message:string, resultChoice:string)
+---@alias OsirisMessageBoxClosedCallback fun(character:CHARACTER, message:string)
+---@alias OsirisMessageBoxYesNoClosedCallback fun(character:CHARACTER, message:string, result:integer)
+---@alias OsirisMissedByCallback fun(defender:CHARACTER, attackOwner:CHARACTER, attacker:CHARACTER, storyActionID:integer)
+---@alias OsirisModuleLoadedinSavegameCallback fun(name:string, major:integer, minor:integer, revision:integer, build:integer)
+---@alias OsirisMoveCapabilityChangedCallback fun(character:CHARACTER, isEnabled:integer)
+---@alias OsirisMovedCallback fun(item:ITEM)
+---@alias OsirisMovedByCallback fun(movedEntity:GUIDSTRING, character:CHARACTER)
+---@alias OsirisMovedFromToCallback fun(movedObject:GUIDSTRING, fromObject:GUIDSTRING, toObject:GUIDSTRING, isTrade:integer)
+---@alias OsirisMovieFinishedCallback fun(movieName:string)
+---@alias OsirisMoviePlaylistFinishedCallback fun(movieName:string)
+---@alias OsirisNestedDialogPlayedCallback fun(dialog:DIALOGRESOURCE, instanceID:integer)
+---@alias OsirisObjectAvailableLevelChangedCallback fun(character:CHARACTER, oldLevel:integer, newLevel:integer)
+---@alias OsirisObjectTimerFinishedCallback fun(object:GUIDSTRING, timer:string)
+---@alias OsirisObjectTransformedCallback fun(object:GUIDSTRING, toTemplate:GUIDSTRING)
+---@alias OsirisObscuredStateChangedCallback fun(object:GUIDSTRING, obscuredState:string)
+---@alias OsirisOnCrimeConfrontationDoneCallback fun(crimeID:integer, investigator:CHARACTER, wasLead:integer, criminal1:CHARACTER, criminal2:CHARACTER, criminal3:CHARACTER, criminal4:CHARACTER)
+---@alias OsirisOnCrimeInvestigatorSwitchedStateCallback fun(crimeID:integer, investigator:CHARACTER, fromState:string, toState:string)
+---@alias OsirisOnCrimeMergedWithCallback fun(oldCrimeID:integer, newCrimeID:integer)
+---@alias OsirisOnCrimeRemovedCallback fun(crimeID:integer, victim:CHARACTER, criminal1:CHARACTER, criminal2:CHARACTER, criminal3:CHARACTER, criminal4:CHARACTER)
+---@alias OsirisOnCrimeResetInterrogationForCriminalCallback fun(crimeID:integer, criminal:CHARACTER)
+---@alias OsirisOnCrimeResolvedCallback fun(crimeID:integer, victim:CHARACTER, criminal1:CHARACTER, criminal2:CHARACTER, criminal3:CHARACTER, criminal4:CHARACTER)
+---@alias OsirisOnCriminalMergedWithCrimeCallback fun(crimeID:integer, criminal:CHARACTER)
+---@alias OsirisOnShutdownCallback fun(isEditorMode:integer)
+---@alias OsirisOnStartCarryingCallback fun(carriedObject:GUIDSTRING, carriedObjectTemplate:ROOT, carrier:GUIDSTRING, storyActionID:integer, pickupPosX:number, pickupPosY:number, pickupPosZ:number)
+---@alias OsirisOnStoryOverrideCallback fun(target:CHARACTER)
+---@alias OsirisOnThrownCallback fun(thrownObject:GUIDSTRING, thrownObjectTemplate:ROOT, thrower:GUIDSTRING, storyActionID:integer, throwPosX:number, throwPosY:number, throwPosZ:number)
+---@alias OsirisOpenedCallback fun(item:ITEM)
+---@alias OsirisPartyPresetLoadedCallback fun(partyPreset:string, levelName:string)
+---@alias OsirisPickupFailedCallback fun(character:CHARACTER, item:ITEM)
+---@alias OsirisPingRequestedCallback fun(character:CHARACTER)
+---@alias OsirisPlatformDestroyedCallback fun(object:GUIDSTRING)
+---@alias OsirisPlatformMovementCanceledCallback fun(object:GUIDSTRING, eventId:string)
+---@alias OsirisPlatformMovementFinishedCallback fun(object:GUIDSTRING, eventId:string)
+---@alias OsirisPreMovedByCallback fun(item:ITEM, character:CHARACTER)
+---@alias OsirisPuzzleUIClosedCallback fun(character:CHARACTER, uIInstance:string, type:integer)
+---@alias OsirisPuzzleUIUsedCallback fun(character:CHARACTER, uIInstance:string, type:integer, command:string, elementId:integer)
+---@alias OsirisQuestAcceptedCallback fun(character:CHARACTER, questID:string)
+---@alias OsirisQuestClosedCallback fun(questID:string)
+---@alias OsirisQuestUpdateUnlockedCallback fun(character:CHARACTER, topLevelQuestID:string, stateID:string)
+---@alias OsirisQueuePurgedCallback fun(object:GUIDSTRING)
+---@alias OsirisRandomCastProcessedCallback fun(caster:GUIDSTRING, storyActionID:integer, spellID:string, rollResult:integer, randomCastDC:integer)
+---@alias OsirisReactionInterruptActionNeededCallback fun(object:GUIDSTRING)
+---@alias OsirisReactionInterruptAddedCallback fun(character:CHARACTER, reactionInterruptName:string)
+---@alias OsirisReactionInterruptUsedCallback fun(object:GUIDSTRING, reactionInterruptPrototypeId:string, isAutoTriggered:integer)
+---@alias OsirisReadyCheckFailedCallback fun(id:string)
+---@alias OsirisReadyCheckPassedCallback fun(id:string)
+---@alias OsirisRelationChangedCallback fun(sourceFaction:FACTION, targetFaction:FACTION, newRelation:integer, permanent:integer)
+---@alias OsirisRemovedFromCallback fun(object:GUIDSTRING, inventoryHolder:GUIDSTRING)
+---@alias OsirisReposeAddedCallback fun(entity:GUIDSTRING, onEntity:GUIDSTRING)
+---@alias OsirisReposeRemovedCallback fun(entity:GUIDSTRING, onEntity:GUIDSTRING)
+---@alias OsirisRequestCanCombineCallback fun(character:CHARACTER, item1:ITEM, item2:ITEM, item3:ITEM, item4:ITEM, item5:ITEM, requestID:integer)
+---@alias OsirisRequestCanDisarmTrapCallback fun(character:CHARACTER, item:ITEM, requestID:integer)
+---@alias OsirisRequestCanLockpickCallback fun(character:CHARACTER, item:ITEM, requestID:integer)
+---@alias OsirisRequestCanLootCallback fun(looter:CHARACTER, target:CHARACTER)
+---@alias OsirisRequestCanMoveCallback fun(character:CHARACTER, item:ITEM, requestID:integer)
+---@alias OsirisRequestCanPickupCallback fun(character:CHARACTER, object:GUIDSTRING, requestID:integer)
+---@alias OsirisRequestCanUseCallback fun(character:CHARACTER, item:ITEM, requestID:integer)
+---@alias OsirisRequestEndTheDayFailCallback fun()
+---@alias OsirisRequestEndTheDaySuccessCallback fun()
+---@alias OsirisRequestGatherAtCampFailCallback fun(character:CHARACTER)
+---@alias OsirisRequestGatherAtCampSuccessCallback fun(character:CHARACTER)
+---@alias OsirisRequestPickpocketCallback fun(player:CHARACTER, npc:CHARACTER)
+---@alias OsirisRequestTradeCallback fun(character:CHARACTER, trader:CHARACTER, tradeMode:TRADEMODE, itemsTagFilter:string)
+---@alias OsirisRespecCancelledCallback fun(character:CHARACTER)
+---@alias OsirisRespecCompletedCallback fun(character:CHARACTER)
+---@alias OsirisRestorePartyFinishedCallback fun()
+---@alias OsirisResurrectedCallback fun(character:CHARACTER)
+---@alias OsirisRollResultCallback fun(eventName:string, roller:CHARACTER, rollSubject:GUIDSTRING, resultType:integer, isActiveRoll:integer, criticality:CRITICALITYTYPE)
+---@alias OsirisRulesetModifierChangedBoolCallback fun(modifier:RULESETMODIFIER, old:integer, new:integer)
+---@alias OsirisRulesetModifierChangedFloatCallback fun(modifier:RULESETMODIFIER, old:number, new:number)
+---@alias OsirisRulesetModifierChangedIntCallback fun(modifier:RULESETMODIFIER, old:integer, new:integer)
+---@alias OsirisRulesetModifierChangedStringCallback fun(modifier:RULESETMODIFIER, old:string, new:string)
+---@alias OsirisSafeRomanceOptionChangedCallback fun(userID:integer, state:integer)
+---@alias OsirisSavegameLoadStartedCallback fun()
+---@alias OsirisSavegameLoadedCallback fun()
+---@alias OsirisSawCallback fun(character:CHARACTER, targetCharacter:CHARACTER, targetWasSneaking:integer)
+---@alias OsirisScatteredAtCallback fun(item:ITEM, x:number, y:number, z:number)
+---@alias OsirisScreenFadeClearedCallback fun(userID:integer, fadeID:string)
+---@alias OsirisScreenFadeDoneCallback fun(userID:integer, fadeID:string)
+---@alias OsirisShapeshiftChangedCallback fun(character:CHARACTER, race:string, gender:string, shapeshiftStatus:string)
+---@alias OsirisShapeshiftedHitpointsChangedCallback fun(entity:GUIDSTRING, percentage:number)
+---@alias OsirisShareInitiativeCallback fun(object:GUIDSTRING)
+---@alias OsirisShortRestCapableCallback fun(character:CHARACTER, capable:integer)
+---@alias OsirisShortRestProcessingCallback fun(character:CHARACTER)
+---@alias OsirisShortRestedCallback fun(character:CHARACTER)
+---@alias OsirisStackedWithCallback fun(item:ITEM, stackedWithItem:ITEM)
+---@alias OsirisStartAttackCallback fun(defender:GUIDSTRING, attackOwner:CHARACTER, attacker:GUIDSTRING, storyActionID:integer)
+---@alias OsirisStartAttackPositionCallback fun(x:number, y:number, z:number, attackOwner:CHARACTER, attacker:GUIDSTRING, storyActionID:integer)
+---@alias OsirisStartedDisarmingTrapCallback fun(character:CHARACTER, item:ITEM)
+---@alias OsirisStartedFleeingCallback fun(character:CHARACTER)
+---@alias OsirisStartedLockpickingCallback fun(character:CHARACTER, item:ITEM)
+---@alias OsirisStartedPreviewingSpellCallback fun(caster:GUIDSTRING, spell:string, isMostPowerful:integer, hasMultipleLevels:integer)
+---@alias OsirisStatusAppliedCallback fun(object:GUIDSTRING, status:string, causee:GUIDSTRING, storyActionID:integer)
+---@alias OsirisStatusAttemptCallback fun(object:GUIDSTRING, status:string, causee:GUIDSTRING, storyActionID:integer)
+---@alias OsirisStatusAttemptFailedCallback fun(object:GUIDSTRING, status:string, causee:GUIDSTRING, storyActionID:integer)
+---@alias OsirisStatusRemovedCallback fun(object:GUIDSTRING, status:string, causee:GUIDSTRING, applyStoryActionID:integer)
+---@alias OsirisStatusTagClearedCallback fun(target:GUIDSTRING, tag:TAG, sourceOwner:GUIDSTRING, source2:GUIDSTRING, storyActionID:integer)
+---@alias OsirisStatusTagSetCallback fun(target:GUIDSTRING, tag:TAG, sourceOwner:GUIDSTRING, source2:GUIDSTRING, storyActionID:integer)
+---@alias OsirisStoppedCombiningCallback fun(character:CHARACTER, item1:ITEM, item2:ITEM, item3:ITEM, item4:ITEM, item5:ITEM)
+---@alias OsirisStoppedDisarmingTrapCallback fun(character:CHARACTER, item:ITEM)
+---@alias OsirisStoppedLockpickingCallback fun(character:CHARACTER, item:ITEM)
+---@alias OsirisStoppedSneakingCallback fun(character:CHARACTER)
+---@alias OsirisSubQuestUpdateUnlockedCallback fun(character:CHARACTER, subQuestID:string, stateID:string)
+---@alias OsirisSupplyTemplateSpentCallback fun(templateId:GUIDSTRING, amount:integer)
+---@alias OsirisSwarmAIGroupJoinedCallback fun(object:GUIDSTRING, group:string)
+---@alias OsirisSwarmAIGroupLeftCallback fun(object:GUIDSTRING, group:string)
+---@alias OsirisSwitchedCombatCallback fun(object:GUIDSTRING, oldCombatGuid:GUIDSTRING, newCombatGuid:GUIDSTRING)
+---@alias OsirisTadpolePowerAssignedCallback fun(character:CHARACTER, power:string)
+---@alias OsirisTagClearedCallback fun(target:GUIDSTRING, tag:TAG)
+---@alias OsirisTagEventCallback fun(tag:TAG, event:string)
+---@alias OsirisTagSetCallback fun(target:GUIDSTRING, tag:TAG)
+---@alias OsirisTeleportToFleeWaypointCallback fun(character:CHARACTER, trigger:TRIGGER)
+---@alias OsirisTeleportToFromCampCallback fun(character:CHARACTER)
+---@alias OsirisTeleportToWaypointCallback fun(character:CHARACTER, trigger:TRIGGER)
+---@alias OsirisTeleportedCallback fun(target:CHARACTER, cause:CHARACTER, oldX:number, oldY:number, oldZ:number, newX:number, newY:number, newZ:number, spell:string)
+---@alias OsirisTeleportedFromCampCallback fun(character:CHARACTER)
+---@alias OsirisTeleportedToCampCallback fun(character:CHARACTER)
+---@alias OsirisTemplateAddedToCallback fun(objectTemplate:ROOT, object2:GUIDSTRING, inventoryHolder:GUIDSTRING, addType:string)
+---@alias OsirisTemplateDestroyedByCallback fun(itemTemplate:ITEMROOT, item2:ITEM, destroyer:CHARACTER, destroyerOwner:CHARACTER, storyActionID:integer)
+---@alias OsirisTemplateEnteredTriggerCallback fun(itemTemplate:ITEMROOT, item2:ITEM, trigger:TRIGGER, owner:CHARACTER, mover:GUIDSTRING)
+---@alias OsirisTemplateEquippedCallback fun(itemTemplate:ITEMROOT, character:CHARACTER)
+---@alias OsirisTemplateKilledByCallback fun(characterTemplate:CHARACTERROOT, defender:CHARACTER, attackOwner:GUIDSTRING, attacker:GUIDSTRING, storyActionID:integer)
+---@alias OsirisTemplateLeftTriggerCallback fun(itemTemplate:ITEMROOT, item2:ITEM, trigger:TRIGGER, owner:CHARACTER, mover:GUIDSTRING)
+---@alias OsirisTemplateOpeningCallback fun(itemTemplate:ITEMROOT, item2:ITEM, character:CHARACTER)
+---@alias OsirisTemplateRemovedFromCallback fun(objectTemplate:ROOT, object2:GUIDSTRING, inventoryHolder:GUIDSTRING)
+---@alias OsirisTemplateUnequippedCallback fun(itemTemplate:ITEMROOT, character:CHARACTER)
+---@alias OsirisTemplateUseFinishedCallback fun(character:CHARACTER, itemTemplate:ITEMROOT, item2:ITEM, sucess:integer)
+---@alias OsirisTemplateUseStartedCallback fun(character:CHARACTER, itemTemplate:ITEMROOT, item2:ITEM)
+---@alias OsirisTemplatesCombinedCallback fun(template1:ITEMROOT, template2:ITEMROOT, template3:ITEMROOT, template4:ITEMROOT, template5:ITEMROOT, character:CHARACTER, newItem:ITEM)
+---@alias OsirisTemporaryHostileRelationRemovedCallback fun(enemy:CHARACTER, sourceFaction:FACTION, targetFaction:FACTION)
+---@alias OsirisTemporaryHostileRelationRequestHandledCallback fun(character1:CHARACTER, character2:CHARACTER, success:integer)
+---@alias OsirisTextEventCallback fun(event:string)
+---@alias OsirisTimelineScreenFadeStartedCallback fun(userID:integer, dialogInstanceId:integer, dialog2:DIALOGRESOURCE)
+---@alias OsirisTimerFinishedCallback fun(timer:string)
+---@alias OsirisTradeEndsCallback fun(character:CHARACTER, trader:CHARACTER)
+---@alias OsirisTradeGenerationEndedCallback fun(trader:CHARACTER)
+---@alias OsirisTradeGenerationStartedCallback fun(trader:CHARACTER)
+---@alias OsirisTurnEndedCallback fun(object:GUIDSTRING)
+---@alias OsirisTurnStartedCallback fun(object:GUIDSTRING)
+---@alias OsirisTutorialBoxClosedCallback fun(character:CHARACTER, message:string)
+---@alias OsirisTutorialClosedCallback fun(userId:integer, entryId:GUIDSTRING)
+---@alias OsirisTutorialEventCallback fun(entity:CHARACTER, event:TUTORIALEVENT)
+---@alias OsirisUnequipFailedCallback fun(item:ITEM, character:CHARACTER)
+---@alias OsirisUnequippedCallback fun(item:ITEM, character:CHARACTER)
+---@alias OsirisUnlockedCallback fun(item:ITEM, character:CHARACTER, key:ITEM)
+---@alias OsirisUnlockedRecipeCallback fun(character:CHARACTER, recipe:string)
+---@alias OsirisUseFinishedCallback fun(character:CHARACTER, item:ITEM, sucess:integer)
+---@alias OsirisUseStartedCallback fun(character:CHARACTER, item:ITEM)
+---@alias OsirisUserAvatarCreatedCallback fun(userID:integer, avatar:CHARACTER, daisy:CHARACTER)
+---@alias OsirisUserCampChestChangedCallback fun(userID:integer, chest:ITEM)
+---@alias OsirisUserCharacterLongRestedCallback fun(character:CHARACTER, isFullRest:integer)
+---@alias OsirisUserConnectedCallback fun(userID:integer, userName:string, userProfileID:string)
+---@alias OsirisUserDisconnectedCallback fun(userID:integer, userName:string, userProfileID:string)
+---@alias OsirisUserEventCallback fun(userID:integer, userEvent:string)
+---@alias OsirisUserMakeWarCallback fun(sourceUserID:integer, targetUserID:integer, war:integer)
+---@alias OsirisUsingSpellCallback fun(caster:GUIDSTRING, spell:string, spellType:string, spellElement:string, storyActionID:integer)
+---@alias OsirisUsingSpellAtPositionCallback fun(caster:GUIDSTRING, x:number, y:number, z:number, spell:string, spellType:string, spellElement:string, storyActionID:integer)
+---@alias OsirisUsingSpellInTriggerCallback fun(caster:GUIDSTRING, spell:string, spellType:string, spellElement:string, trigger:TRIGGER, storyActionID:integer)
+---@alias OsirisUsingSpellOnTargetCallback fun(caster:GUIDSTRING, target:GUIDSTRING, spell:string, spellType:string, spellElement:string, storyActionID:integer)
+---@alias OsirisUsingSpellOnZoneWithTargetCallback fun(caster:GUIDSTRING, target:GUIDSTRING, spell:string, spellType:string, spellElement:string, storyActionID:integer)
+---@alias OsirisVoiceBarkEndedCallback fun(bark:VOICEBARKRESOURCE, instanceID:integer)
+---@alias OsirisVoiceBarkFailedCallback fun(bark:VOICEBARKRESOURCE)
+---@alias OsirisVoiceBarkStartedCallback fun(bark:VOICEBARKRESOURCE, instanceID:integer)
+---@alias OsirisWentOnStageCallback fun(object:GUIDSTRING, isOnStageNow:integer)
+
+-- #endregion
+
+---@class Ext_Osiris
+---@field RegisterListener fun(id:string, arity:integer, eventType:OsirisEventType, callback:function):integer
+---@field UnregisterListener fun(subscriberId:integer)
+---@field RegisterListener fun(id:"Activated", arity:1, eventType:OsirisEventType, callback:OsirisActivatedCallback):integer
+---@field RegisterListener fun(id:"ActorSpeakerIndexChanged", arity:4, eventType:OsirisEventType, callback:OsirisActorSpeakerIndexChangedCallback):integer
+---@field RegisterListener fun(id:"AddedTo", arity:3, eventType:OsirisEventType, callback:OsirisAddedToCallback):integer
+---@field RegisterListener fun(id:"AllLoadedFlagsInPresetReceivedEvent", arity:0, eventType:OsirisEventType, callback:OsirisAllLoadedFlagsInPresetReceivedEventCallback):integer
+---@field RegisterListener fun(id:"AnimationEvent", arity:3, eventType:OsirisEventType, callback:OsirisAnimationEventCallback):integer
+---@field RegisterListener fun(id:"AppearTeleportFailed", arity:2, eventType:OsirisEventType, callback:OsirisAppearTeleportFailedCallback):integer
+---@field RegisterListener fun(id:"ApprovalRatingChangeAttempt", arity:5, eventType:OsirisEventType, callback:OsirisApprovalRatingChangeAttemptCallback):integer
+---@field RegisterListener fun(id:"ApprovalRatingChanged", arity:3, eventType:OsirisEventType, callback:OsirisApprovalRatingChangedCallback):integer
+---@field RegisterListener fun(id:"ArmedTrapUsed", arity:2, eventType:OsirisEventType, callback:OsirisArmedTrapUsedCallback):integer
+---@field RegisterListener fun(id:"ArmorSetChanged", arity:2, eventType:OsirisEventType, callback:OsirisArmorSetChangedCallback):integer
+---@field RegisterListener fun(id:"AttachedToPartyGroup", arity:1, eventType:OsirisEventType, callback:OsirisAttachedToPartyGroupCallback):integer
+---@field RegisterListener fun(id:"AttackedBy", arity:7, eventType:OsirisEventType, callback:OsirisAttackedByCallback):integer
+---@field RegisterListener fun(id:"AttemptedDisarm", arity:4, eventType:OsirisEventType, callback:OsirisAttemptedDisarmCallback):integer
+---@field RegisterListener fun(id:"AutomatedDialogEnded", arity:2, eventType:OsirisEventType, callback:OsirisAutomatedDialogEndedCallback):integer
+---@field RegisterListener fun(id:"AutomatedDialogForceStopping", arity:2, eventType:OsirisEventType, callback:OsirisAutomatedDialogForceStoppingCallback):integer
+---@field RegisterListener fun(id:"AutomatedDialogRequestFailed", arity:2, eventType:OsirisEventType, callback:OsirisAutomatedDialogRequestFailedCallback):integer
+---@field RegisterListener fun(id:"AutomatedDialogStarted", arity:2, eventType:OsirisEventType, callback:OsirisAutomatedDialogStartedCallback):integer
+---@field RegisterListener fun(id:"BackgroundGoalFailed", arity:2, eventType:OsirisEventType, callback:OsirisBackgroundGoalFailedCallback):integer
+---@field RegisterListener fun(id:"BackgroundGoalRewarded", arity:2, eventType:OsirisEventType, callback:OsirisBackgroundGoalRewardedCallback):integer
+---@field RegisterListener fun(id:"BaseFactionChanged", arity:3, eventType:OsirisEventType, callback:OsirisBaseFactionChangedCallback):integer
+---@field RegisterListener fun(id:"CameraReachedNode", arity:5, eventType:OsirisEventType, callback:OsirisCameraReachedNodeCallback):integer
+---@field RegisterListener fun(id:"CanBeLootedCapabilityChanged", arity:2, eventType:OsirisEventType, callback:OsirisCanBeLootedCapabilityChangedCallback):integer
+---@field RegisterListener fun(id:"CastSpell", arity:5, eventType:OsirisEventType, callback:OsirisCastSpellCallback):integer
+---@field RegisterListener fun(id:"CastSpellFailed", arity:5, eventType:OsirisEventType, callback:OsirisCastSpellFailedCallback):integer
+---@field RegisterListener fun(id:"CastedSpell", arity:5, eventType:OsirisEventType, callback:OsirisCastedSpellCallback):integer
+---@field RegisterListener fun(id:"ChangeAppearanceCancelled", arity:1, eventType:OsirisEventType, callback:OsirisChangeAppearanceCancelledCallback):integer
+---@field RegisterListener fun(id:"ChangeAppearanceCompleted", arity:1, eventType:OsirisEventType, callback:OsirisChangeAppearanceCompletedCallback):integer
+---@field RegisterListener fun(id:"CharacterCreationFinished", arity:0, eventType:OsirisEventType, callback:OsirisCharacterCreationFinishedCallback):integer
+---@field RegisterListener fun(id:"CharacterCreationStarted", arity:0, eventType:OsirisEventType, callback:OsirisCharacterCreationStartedCallback):integer
+---@field RegisterListener fun(id:"CharacterDisarmed", arity:3, eventType:OsirisEventType, callback:OsirisCharacterDisarmedCallback):integer
+---@field RegisterListener fun(id:"CharacterJoinedParty", arity:1, eventType:OsirisEventType, callback:OsirisCharacterJoinedPartyCallback):integer
+---@field RegisterListener fun(id:"CharacterLeftParty", arity:1, eventType:OsirisEventType, callback:OsirisCharacterLeftPartyCallback):integer
+---@field RegisterListener fun(id:"CharacterLoadedInPreset", arity:1, eventType:OsirisEventType, callback:OsirisCharacterLoadedInPresetCallback):integer
+---@field RegisterListener fun(id:"CharacterLootedCharacter", arity:2, eventType:OsirisEventType, callback:OsirisCharacterLootedCharacterCallback):integer
+---@field RegisterListener fun(id:"CharacterMadePlayer", arity:1, eventType:OsirisEventType, callback:OsirisCharacterMadePlayerCallback):integer
+---@field RegisterListener fun(id:"CharacterMoveFailedUseJump", arity:1, eventType:OsirisEventType, callback:OsirisCharacterMoveFailedUseJumpCallback):integer
+---@field RegisterListener fun(id:"CharacterMoveToAndTalkFailed", arity:4, eventType:OsirisEventType, callback:OsirisCharacterMoveToAndTalkFailedCallback):integer
+---@field RegisterListener fun(id:"CharacterMoveToAndTalkRequestDialog", arity:4, eventType:OsirisEventType, callback:OsirisCharacterMoveToAndTalkRequestDialogCallback):integer
+---@field RegisterListener fun(id:"CharacterMoveToCancelled", arity:2, eventType:OsirisEventType, callback:OsirisCharacterMoveToCancelledCallback):integer
+---@field RegisterListener fun(id:"CharacterOnCrimeSensibleActionNotification", arity:10, eventType:OsirisEventType, callback:OsirisCharacterOnCrimeSensibleActionNotificationCallback):integer
+---@field RegisterListener fun(id:"CharacterPickpocketFailed", arity:2, eventType:OsirisEventType, callback:OsirisCharacterPickpocketFailedCallback):integer
+---@field RegisterListener fun(id:"CharacterPickpocketSuccess", arity:6, eventType:OsirisEventType, callback:OsirisCharacterPickpocketSuccessCallback):integer
+---@field RegisterListener fun(id:"CharacterReservedUserIDChanged", arity:3, eventType:OsirisEventType, callback:OsirisCharacterReservedUserIDChangedCallback):integer
+---@field RegisterListener fun(id:"CharacterSelectedAsBestUnavailableFallbackLead", arity:4, eventType:OsirisEventType, callback:OsirisCharacterSelectedAsBestUnavailableFallbackLeadCallback):integer
+---@field RegisterListener fun(id:"CharacterSelectedClimbOn", arity:1, eventType:OsirisEventType, callback:OsirisCharacterSelectedClimbOnCallback):integer
+---@field RegisterListener fun(id:"CharacterSelectedForUser", arity:2, eventType:OsirisEventType, callback:OsirisCharacterSelectedForUserCallback):integer
+---@field RegisterListener fun(id:"CharacterStoleItem", arity:10, eventType:OsirisEventType, callback:OsirisCharacterStoleItemCallback):integer
+---@field RegisterListener fun(id:"CharacterTagEvent", arity:3, eventType:OsirisEventType, callback:OsirisCharacterTagEventCallback):integer
+---@field RegisterListener fun(id:"Closed", arity:1, eventType:OsirisEventType, callback:OsirisClosedCallback):integer
+---@field RegisterListener fun(id:"CombatEnded", arity:1, eventType:OsirisEventType, callback:OsirisCombatEndedCallback):integer
+---@field RegisterListener fun(id:"CombatPaused", arity:1, eventType:OsirisEventType, callback:OsirisCombatPausedCallback):integer
+---@field RegisterListener fun(id:"CombatResumed", arity:1, eventType:OsirisEventType, callback:OsirisCombatResumedCallback):integer
+---@field RegisterListener fun(id:"CombatRoundStarted", arity:2, eventType:OsirisEventType, callback:OsirisCombatRoundStartedCallback):integer
+---@field RegisterListener fun(id:"CombatStarted", arity:1, eventType:OsirisEventType, callback:OsirisCombatStartedCallback):integer
+---@field RegisterListener fun(id:"Combined", arity:7, eventType:OsirisEventType, callback:OsirisCombinedCallback):integer
+---@field RegisterListener fun(id:"CompanionSelectedForUser", arity:2, eventType:OsirisEventType, callback:OsirisCompanionSelectedForUserCallback):integer
+---@field RegisterListener fun(id:"CreditsEnded", arity:0, eventType:OsirisEventType, callback:OsirisCreditsEndedCallback):integer
+---@field RegisterListener fun(id:"CrimeDisabled", arity:2, eventType:OsirisEventType, callback:OsirisCrimeDisabledCallback):integer
+---@field RegisterListener fun(id:"CrimeEnabled", arity:2, eventType:OsirisEventType, callback:OsirisCrimeEnabledCallback):integer
+---@field RegisterListener fun(id:"CrimeIsRegistered", arity:8, eventType:OsirisEventType, callback:OsirisCrimeIsRegisteredCallback):integer
+---@field RegisterListener fun(id:"CrimeProcessingStarted", arity:2, eventType:OsirisEventType, callback:OsirisCrimeProcessingStartedCallback):integer
+---@field RegisterListener fun(id:"CriticalHitBy", arity:4, eventType:OsirisEventType, callback:OsirisCriticalHitByCallback):integer
+---@field RegisterListener fun(id:"CustomBookUIClosed", arity:2, eventType:OsirisEventType, callback:OsirisCustomBookUIClosedCallback):integer
+---@field RegisterListener fun(id:"DLCUpdated", arity:3, eventType:OsirisEventType, callback:OsirisDLCUpdatedCallback):integer
+---@field RegisterListener fun(id:"Deactivated", arity:1, eventType:OsirisEventType, callback:OsirisDeactivatedCallback):integer
+---@field RegisterListener fun(id:"DeathSaveStable", arity:1, eventType:OsirisEventType, callback:OsirisDeathSaveStableCallback):integer
+---@field RegisterListener fun(id:"DeathTypeChanged", arity:2, eventType:OsirisEventType, callback:OsirisDeathTypeChangedCallback):integer
+---@field RegisterListener fun(id:"DestroyedBy", arity:4, eventType:OsirisEventType, callback:OsirisDestroyedByCallback):integer
+---@field RegisterListener fun(id:"DestroyingBy", arity:4, eventType:OsirisEventType, callback:OsirisDestroyingByCallback):integer
+---@field RegisterListener fun(id:"DetachedFromPartyGroup", arity:1, eventType:OsirisEventType, callback:OsirisDetachedFromPartyGroupCallback):integer
+---@field RegisterListener fun(id:"DialogActorJoinFailed", arity:3, eventType:OsirisEventType, callback:OsirisDialogActorJoinFailedCallback):integer
+---@field RegisterListener fun(id:"DialogActorJoined", arity:4, eventType:OsirisEventType, callback:OsirisDialogActorJoinedCallback):integer
+---@field RegisterListener fun(id:"DialogActorLeft", arity:4, eventType:OsirisEventType, callback:OsirisDialogActorLeftCallback):integer
+---@field RegisterListener fun(id:"DialogAttackRequested", arity:2, eventType:OsirisEventType, callback:OsirisDialogAttackRequestedCallback):integer
+---@field RegisterListener fun(id:"DialogEnded", arity:2, eventType:OsirisEventType, callback:OsirisDialogEndedCallback):integer
+---@field RegisterListener fun(id:"DialogForceStopping", arity:2, eventType:OsirisEventType, callback:OsirisDialogForceStoppingCallback):integer
+---@field RegisterListener fun(id:"DialogRequestFailed", arity:2, eventType:OsirisEventType, callback:OsirisDialogRequestFailedCallback):integer
+---@field RegisterListener fun(id:"DialogRollResult", arity:5, eventType:OsirisEventType, callback:OsirisDialogRollResultCallback):integer
+---@field RegisterListener fun(id:"DialogStartRequested", arity:2, eventType:OsirisEventType, callback:OsirisDialogStartRequestedCallback):integer
+---@field RegisterListener fun(id:"DialogStarted", arity:2, eventType:OsirisEventType, callback:OsirisDialogStartedCallback):integer
+---@field RegisterListener fun(id:"DialogueCapabilityChanged", arity:2, eventType:OsirisEventType, callback:OsirisDialogueCapabilityChangedCallback):integer
+---@field RegisterListener fun(id:"Died", arity:1, eventType:OsirisEventType, callback:OsirisDiedCallback):integer
+---@field RegisterListener fun(id:"DifficultyChanged", arity:1, eventType:OsirisEventType, callback:OsirisDifficultyChangedCallback):integer
+---@field RegisterListener fun(id:"DisappearOutOfSightToCancelled", arity:2, eventType:OsirisEventType, callback:OsirisDisappearOutOfSightToCancelledCallback):integer
+---@field RegisterListener fun(id:"Donated", arity:4, eventType:OsirisEventType, callback:OsirisDonatedCallback):integer
+---@field RegisterListener fun(id:"DoorTemplateClosing", arity:3, eventType:OsirisEventType, callback:OsirisDoorTemplateClosingCallback):integer
+---@field RegisterListener fun(id:"DownedChanged", arity:2, eventType:OsirisEventType, callback:OsirisDownedChangedCallback):integer
+---@field RegisterListener fun(id:"DroppedBy", arity:2, eventType:OsirisEventType, callback:OsirisDroppedByCallback):integer
+---@field RegisterListener fun(id:"DualEntityEvent", arity:3, eventType:OsirisEventType, callback:OsirisDualEntityEventCallback):integer
+---@field RegisterListener fun(id:"Dying", arity:1, eventType:OsirisEventType, callback:OsirisDyingCallback):integer
+---@field RegisterListener fun(id:"EndTheDayRequested", arity:1, eventType:OsirisEventType, callback:OsirisEndTheDayRequestedCallback):integer
+---@field RegisterListener fun(id:"EnterCombatFailed", arity:2, eventType:OsirisEventType, callback:OsirisEnterCombatFailedCallback):integer
+---@field RegisterListener fun(id:"EnteredChasm", arity:6, eventType:OsirisEventType, callback:OsirisEnteredChasmCallback):integer
+---@field RegisterListener fun(id:"EnteredCombat", arity:2, eventType:OsirisEventType, callback:OsirisEnteredCombatCallback):integer
+---@field RegisterListener fun(id:"EnteredForceTurnBased", arity:1, eventType:OsirisEventType, callback:OsirisEnteredForceTurnBasedCallback):integer
+---@field RegisterListener fun(id:"EnteredLevel", arity:3, eventType:OsirisEventType, callback:OsirisEnteredLevelCallback):integer
+---@field RegisterListener fun(id:"EnteredSharedForceTurnBased", arity:2, eventType:OsirisEventType, callback:OsirisEnteredSharedForceTurnBasedCallback):integer
+---@field RegisterListener fun(id:"EnteredTrigger", arity:2, eventType:OsirisEventType, callback:OsirisEnteredTriggerCallback):integer
+---@field RegisterListener fun(id:"EntityEvent", arity:2, eventType:OsirisEventType, callback:OsirisEntityEventCallback):integer
+---@field RegisterListener fun(id:"EquipFailed", arity:2, eventType:OsirisEventType, callback:OsirisEquipFailedCallback):integer
+---@field RegisterListener fun(id:"Equipped", arity:2, eventType:OsirisEventType, callback:OsirisEquippedCallback):integer
+---@field RegisterListener fun(id:"EscortGroupLeaderChanged", arity:3, eventType:OsirisEventType, callback:OsirisEscortGroupLeaderChangedCallback):integer
+---@field RegisterListener fun(id:"FailedToLoadItemInPreset", arity:4, eventType:OsirisEventType, callback:OsirisFailedToLoadItemInPresetCallback):integer
+---@field RegisterListener fun(id:"Falling", arity:2, eventType:OsirisEventType, callback:OsirisFallingCallback):integer
+---@field RegisterListener fun(id:"Fell", arity:2, eventType:OsirisEventType, callback:OsirisFellCallback):integer
+---@field RegisterListener fun(id:"FlagCleared", arity:3, eventType:OsirisEventType, callback:OsirisFlagClearedCallback):integer
+---@field RegisterListener fun(id:"FlagLoadedInPresetEvent", arity:2, eventType:OsirisEventType, callback:OsirisFlagLoadedInPresetEventCallback):integer
+---@field RegisterListener fun(id:"FlagSet", arity:3, eventType:OsirisEventType, callback:OsirisFlagSetCallback):integer
+---@field RegisterListener fun(id:"FleeFromCombat", arity:2, eventType:OsirisEventType, callback:OsirisFleeFromCombatCallback):integer
+---@field RegisterListener fun(id:"FollowerCantUseItem", arity:1, eventType:OsirisEventType, callback:OsirisFollowerCantUseItemCallback):integer
+---@field RegisterListener fun(id:"ForceDismissCompanion", arity:1, eventType:OsirisEventType, callback:OsirisForceDismissCompanionCallback):integer
+---@field RegisterListener fun(id:"ForceMoveEnded", arity:3, eventType:OsirisEventType, callback:OsirisForceMoveEndedCallback):integer
+---@field RegisterListener fun(id:"ForceMoveStarted", arity:3, eventType:OsirisEventType, callback:OsirisForceMoveStartedCallback):integer
+---@field RegisterListener fun(id:"GainedControl", arity:1, eventType:OsirisEventType, callback:OsirisGainedControlCallback):integer
+---@field RegisterListener fun(id:"GameBookInterfaceClosed", arity:2, eventType:OsirisEventType, callback:OsirisGameBookInterfaceClosedCallback):integer
+---@field RegisterListener fun(id:"GameModeStarted", arity:3, eventType:OsirisEventType, callback:OsirisGameModeStartedCallback):integer
+---@field RegisterListener fun(id:"GameOption", arity:2, eventType:OsirisEventType, callback:OsirisGameOptionCallback):integer
+---@field RegisterListener fun(id:"GoldChanged", arity:2, eventType:OsirisEventType, callback:OsirisGoldChangedCallback):integer
+---@field RegisterListener fun(id:"GotUp", arity:1, eventType:OsirisEventType, callback:OsirisGotUpCallback):integer
+---@field RegisterListener fun(id:"HappyWithDeal", arity:4, eventType:OsirisEventType, callback:OsirisHappyWithDealCallback):integer
+---@field RegisterListener fun(id:"HenchmanAborted", arity:1, eventType:OsirisEventType, callback:OsirisHenchmanAbortedCallback):integer
+---@field RegisterListener fun(id:"HenchmanSelected", arity:2, eventType:OsirisEventType, callback:OsirisHenchmanSelectedCallback):integer
+---@field RegisterListener fun(id:"HitProxy", arity:5, eventType:OsirisEventType, callback:OsirisHitProxyCallback):integer
+---@field RegisterListener fun(id:"HitpointsChanged", arity:2, eventType:OsirisEventType, callback:OsirisHitpointsChangedCallback):integer
+---@field RegisterListener fun(id:"InstanceDialogChanged", arity:4, eventType:OsirisEventType, callback:OsirisInstanceDialogChangedCallback):integer
+---@field RegisterListener fun(id:"InteractionCapabilityChanged", arity:2, eventType:OsirisEventType, callback:OsirisInteractionCapabilityChangedCallback):integer
+---@field RegisterListener fun(id:"InteractionFallback", arity:2, eventType:OsirisEventType, callback:OsirisInteractionFallbackCallback):integer
+---@field RegisterListener fun(id:"InventoryBoundChanged", arity:2, eventType:OsirisEventType, callback:OsirisInventoryBoundChangedCallback):integer
+---@field RegisterListener fun(id:"InventorySharingChanged", arity:2, eventType:OsirisEventType, callback:OsirisInventorySharingChangedCallback):integer
+---@field RegisterListener fun(id:"ItemEnteredTrigger", arity:3, eventType:OsirisEventType, callback:OsirisItemEnteredTriggerCallback):integer
+---@field RegisterListener fun(id:"ItemLeftTrigger", arity:3, eventType:OsirisEventType, callback:OsirisItemLeftTriggerCallback):integer
+---@field RegisterListener fun(id:"ItemTeleported", arity:7, eventType:OsirisEventType, callback:OsirisItemTeleportedCallback):integer
+---@field RegisterListener fun(id:"KilledBy", arity:4, eventType:OsirisEventType, callback:OsirisKilledByCallback):integer
+---@field RegisterListener fun(id:"LearnedSpell", arity:2, eventType:OsirisEventType, callback:OsirisLearnedSpellCallback):integer
+---@field RegisterListener fun(id:"LeftCombat", arity:2, eventType:OsirisEventType, callback:OsirisLeftCombatCallback):integer
+---@field RegisterListener fun(id:"LeftForceTurnBased", arity:1, eventType:OsirisEventType, callback:OsirisLeftForceTurnBasedCallback):integer
+---@field RegisterListener fun(id:"LeftLevel", arity:2, eventType:OsirisEventType, callback:OsirisLeftLevelCallback):integer
+---@field RegisterListener fun(id:"LeftTrigger", arity:2, eventType:OsirisEventType, callback:OsirisLeftTriggerCallback):integer
+---@field RegisterListener fun(id:"LevelGameplayReady", arity:2, eventType:OsirisEventType, callback:OsirisLevelGameplayReadyCallback):integer
+---@field RegisterListener fun(id:"LevelGameplayStarted", arity:2, eventType:OsirisEventType, callback:OsirisLevelGameplayStartedCallback):integer
+---@field RegisterListener fun(id:"LevelLoaded", arity:1, eventType:OsirisEventType, callback:OsirisLevelLoadedCallback):integer
+---@field RegisterListener fun(id:"LevelTemplateLoaded", arity:1, eventType:OsirisEventType, callback:OsirisLevelTemplateLoadedCallback):integer
+---@field RegisterListener fun(id:"LevelUnloading", arity:1, eventType:OsirisEventType, callback:OsirisLevelUnloadingCallback):integer
+---@field RegisterListener fun(id:"LeveledUp", arity:1, eventType:OsirisEventType, callback:OsirisLeveledUpCallback):integer
+---@field RegisterListener fun(id:"LongRestCancelled", arity:0, eventType:OsirisEventType, callback:OsirisLongRestCancelledCallback):integer
+---@field RegisterListener fun(id:"LongRestFinished", arity:0, eventType:OsirisEventType, callback:OsirisLongRestFinishedCallback):integer
+---@field RegisterListener fun(id:"LongRestStartFailed", arity:0, eventType:OsirisEventType, callback:OsirisLongRestStartFailedCallback):integer
+---@field RegisterListener fun(id:"LongRestStarted", arity:0, eventType:OsirisEventType, callback:OsirisLongRestStartedCallback):integer
+---@field RegisterListener fun(id:"LostSightOf", arity:2, eventType:OsirisEventType, callback:OsirisLostSightOfCallback):integer
+---@field RegisterListener fun(id:"MainPerformerStarted", arity:2, eventType:OsirisEventType, callback:OsirisMainPerformerStartedCallback):integer
+---@field RegisterListener fun(id:"MessageBoxChoiceClosed", arity:3, eventType:OsirisEventType, callback:OsirisMessageBoxChoiceClosedCallback):integer
+---@field RegisterListener fun(id:"MessageBoxClosed", arity:2, eventType:OsirisEventType, callback:OsirisMessageBoxClosedCallback):integer
+---@field RegisterListener fun(id:"MessageBoxYesNoClosed", arity:3, eventType:OsirisEventType, callback:OsirisMessageBoxYesNoClosedCallback):integer
+---@field RegisterListener fun(id:"MissedBy", arity:4, eventType:OsirisEventType, callback:OsirisMissedByCallback):integer
+---@field RegisterListener fun(id:"ModuleLoadedinSavegame", arity:5, eventType:OsirisEventType, callback:OsirisModuleLoadedinSavegameCallback):integer
+---@field RegisterListener fun(id:"MoveCapabilityChanged", arity:2, eventType:OsirisEventType, callback:OsirisMoveCapabilityChangedCallback):integer
+---@field RegisterListener fun(id:"Moved", arity:1, eventType:OsirisEventType, callback:OsirisMovedCallback):integer
+---@field RegisterListener fun(id:"MovedBy", arity:2, eventType:OsirisEventType, callback:OsirisMovedByCallback):integer
+---@field RegisterListener fun(id:"MovedFromTo", arity:4, eventType:OsirisEventType, callback:OsirisMovedFromToCallback):integer
+---@field RegisterListener fun(id:"MovieFinished", arity:1, eventType:OsirisEventType, callback:OsirisMovieFinishedCallback):integer
+---@field RegisterListener fun(id:"MoviePlaylistFinished", arity:1, eventType:OsirisEventType, callback:OsirisMoviePlaylistFinishedCallback):integer
+---@field RegisterListener fun(id:"NestedDialogPlayed", arity:2, eventType:OsirisEventType, callback:OsirisNestedDialogPlayedCallback):integer
+---@field RegisterListener fun(id:"ObjectAvailableLevelChanged", arity:3, eventType:OsirisEventType, callback:OsirisObjectAvailableLevelChangedCallback):integer
+---@field RegisterListener fun(id:"ObjectTimerFinished", arity:2, eventType:OsirisEventType, callback:OsirisObjectTimerFinishedCallback):integer
+---@field RegisterListener fun(id:"ObjectTransformed", arity:2, eventType:OsirisEventType, callback:OsirisObjectTransformedCallback):integer
+---@field RegisterListener fun(id:"ObscuredStateChanged", arity:2, eventType:OsirisEventType, callback:OsirisObscuredStateChangedCallback):integer
+---@field RegisterListener fun(id:"OnCrimeConfrontationDone", arity:7, eventType:OsirisEventType, callback:OsirisOnCrimeConfrontationDoneCallback):integer
+---@field RegisterListener fun(id:"OnCrimeInvestigatorSwitchedState", arity:4, eventType:OsirisEventType, callback:OsirisOnCrimeInvestigatorSwitchedStateCallback):integer
+---@field RegisterListener fun(id:"OnCrimeMergedWith", arity:2, eventType:OsirisEventType, callback:OsirisOnCrimeMergedWithCallback):integer
+---@field RegisterListener fun(id:"OnCrimeRemoved", arity:6, eventType:OsirisEventType, callback:OsirisOnCrimeRemovedCallback):integer
+---@field RegisterListener fun(id:"OnCrimeResetInterrogationForCriminal", arity:2, eventType:OsirisEventType, callback:OsirisOnCrimeResetInterrogationForCriminalCallback):integer
+---@field RegisterListener fun(id:"OnCrimeResolved", arity:6, eventType:OsirisEventType, callback:OsirisOnCrimeResolvedCallback):integer
+---@field RegisterListener fun(id:"OnCriminalMergedWithCrime", arity:2, eventType:OsirisEventType, callback:OsirisOnCriminalMergedWithCrimeCallback):integer
+---@field RegisterListener fun(id:"OnShutdown", arity:1, eventType:OsirisEventType, callback:OsirisOnShutdownCallback):integer
+---@field RegisterListener fun(id:"OnStartCarrying", arity:7, eventType:OsirisEventType, callback:OsirisOnStartCarryingCallback):integer
+---@field RegisterListener fun(id:"OnStoryOverride", arity:1, eventType:OsirisEventType, callback:OsirisOnStoryOverrideCallback):integer
+---@field RegisterListener fun(id:"OnThrown", arity:7, eventType:OsirisEventType, callback:OsirisOnThrownCallback):integer
+---@field RegisterListener fun(id:"Opened", arity:1, eventType:OsirisEventType, callback:OsirisOpenedCallback):integer
+---@field RegisterListener fun(id:"PartyPresetLoaded", arity:2, eventType:OsirisEventType, callback:OsirisPartyPresetLoadedCallback):integer
+---@field RegisterListener fun(id:"PickupFailed", arity:2, eventType:OsirisEventType, callback:OsirisPickupFailedCallback):integer
+---@field RegisterListener fun(id:"PingRequested", arity:1, eventType:OsirisEventType, callback:OsirisPingRequestedCallback):integer
+---@field RegisterListener fun(id:"PlatformDestroyed", arity:1, eventType:OsirisEventType, callback:OsirisPlatformDestroyedCallback):integer
+---@field RegisterListener fun(id:"PlatformMovementCanceled", arity:2, eventType:OsirisEventType, callback:OsirisPlatformMovementCanceledCallback):integer
+---@field RegisterListener fun(id:"PlatformMovementFinished", arity:2, eventType:OsirisEventType, callback:OsirisPlatformMovementFinishedCallback):integer
+---@field RegisterListener fun(id:"PreMovedBy", arity:2, eventType:OsirisEventType, callback:OsirisPreMovedByCallback):integer
+---@field RegisterListener fun(id:"PuzzleUIClosed", arity:3, eventType:OsirisEventType, callback:OsirisPuzzleUIClosedCallback):integer
+---@field RegisterListener fun(id:"PuzzleUIUsed", arity:5, eventType:OsirisEventType, callback:OsirisPuzzleUIUsedCallback):integer
+---@field RegisterListener fun(id:"QuestAccepted", arity:2, eventType:OsirisEventType, callback:OsirisQuestAcceptedCallback):integer
+---@field RegisterListener fun(id:"QuestClosed", arity:1, eventType:OsirisEventType, callback:OsirisQuestClosedCallback):integer
+---@field RegisterListener fun(id:"QuestUpdateUnlocked", arity:3, eventType:OsirisEventType, callback:OsirisQuestUpdateUnlockedCallback):integer
+---@field RegisterListener fun(id:"QueuePurged", arity:1, eventType:OsirisEventType, callback:OsirisQueuePurgedCallback):integer
+---@field RegisterListener fun(id:"RandomCastProcessed", arity:5, eventType:OsirisEventType, callback:OsirisRandomCastProcessedCallback):integer
+---@field RegisterListener fun(id:"ReactionInterruptActionNeeded", arity:1, eventType:OsirisEventType, callback:OsirisReactionInterruptActionNeededCallback):integer
+---@field RegisterListener fun(id:"ReactionInterruptAdded", arity:2, eventType:OsirisEventType, callback:OsirisReactionInterruptAddedCallback):integer
+---@field RegisterListener fun(id:"ReactionInterruptUsed", arity:3, eventType:OsirisEventType, callback:OsirisReactionInterruptUsedCallback):integer
+---@field RegisterListener fun(id:"ReadyCheckFailed", arity:1, eventType:OsirisEventType, callback:OsirisReadyCheckFailedCallback):integer
+---@field RegisterListener fun(id:"ReadyCheckPassed", arity:1, eventType:OsirisEventType, callback:OsirisReadyCheckPassedCallback):integer
+---@field RegisterListener fun(id:"RelationChanged", arity:4, eventType:OsirisEventType, callback:OsirisRelationChangedCallback):integer
+---@field RegisterListener fun(id:"RemovedFrom", arity:2, eventType:OsirisEventType, callback:OsirisRemovedFromCallback):integer
+---@field RegisterListener fun(id:"ReposeAdded", arity:2, eventType:OsirisEventType, callback:OsirisReposeAddedCallback):integer
+---@field RegisterListener fun(id:"ReposeRemoved", arity:2, eventType:OsirisEventType, callback:OsirisReposeRemovedCallback):integer
+---@field RegisterListener fun(id:"RequestCanCombine", arity:7, eventType:OsirisEventType, callback:OsirisRequestCanCombineCallback):integer
+---@field RegisterListener fun(id:"RequestCanDisarmTrap", arity:3, eventType:OsirisEventType, callback:OsirisRequestCanDisarmTrapCallback):integer
+---@field RegisterListener fun(id:"RequestCanLockpick", arity:3, eventType:OsirisEventType, callback:OsirisRequestCanLockpickCallback):integer
+---@field RegisterListener fun(id:"RequestCanLoot", arity:2, eventType:OsirisEventType, callback:OsirisRequestCanLootCallback):integer
+---@field RegisterListener fun(id:"RequestCanMove", arity:3, eventType:OsirisEventType, callback:OsirisRequestCanMoveCallback):integer
+---@field RegisterListener fun(id:"RequestCanPickup", arity:3, eventType:OsirisEventType, callback:OsirisRequestCanPickupCallback):integer
+---@field RegisterListener fun(id:"RequestCanUse", arity:3, eventType:OsirisEventType, callback:OsirisRequestCanUseCallback):integer
+---@field RegisterListener fun(id:"RequestEndTheDayFail", arity:0, eventType:OsirisEventType, callback:OsirisRequestEndTheDayFailCallback):integer
+---@field RegisterListener fun(id:"RequestEndTheDaySuccess", arity:0, eventType:OsirisEventType, callback:OsirisRequestEndTheDaySuccessCallback):integer
+---@field RegisterListener fun(id:"RequestGatherAtCampFail", arity:1, eventType:OsirisEventType, callback:OsirisRequestGatherAtCampFailCallback):integer
+---@field RegisterListener fun(id:"RequestGatherAtCampSuccess", arity:1, eventType:OsirisEventType, callback:OsirisRequestGatherAtCampSuccessCallback):integer
+---@field RegisterListener fun(id:"RequestPickpocket", arity:2, eventType:OsirisEventType, callback:OsirisRequestPickpocketCallback):integer
+---@field RegisterListener fun(id:"RequestTrade", arity:4, eventType:OsirisEventType, callback:OsirisRequestTradeCallback):integer
+---@field RegisterListener fun(id:"RespecCancelled", arity:1, eventType:OsirisEventType, callback:OsirisRespecCancelledCallback):integer
+---@field RegisterListener fun(id:"RespecCompleted", arity:1, eventType:OsirisEventType, callback:OsirisRespecCompletedCallback):integer
+---@field RegisterListener fun(id:"RestorePartyFinished", arity:0, eventType:OsirisEventType, callback:OsirisRestorePartyFinishedCallback):integer
+---@field RegisterListener fun(id:"Resurrected", arity:1, eventType:OsirisEventType, callback:OsirisResurrectedCallback):integer
+---@field RegisterListener fun(id:"RollResult", arity:6, eventType:OsirisEventType, callback:OsirisRollResultCallback):integer
+---@field RegisterListener fun(id:"RulesetModifierChangedBool", arity:3, eventType:OsirisEventType, callback:OsirisRulesetModifierChangedBoolCallback):integer
+---@field RegisterListener fun(id:"RulesetModifierChangedFloat", arity:3, eventType:OsirisEventType, callback:OsirisRulesetModifierChangedFloatCallback):integer
+---@field RegisterListener fun(id:"RulesetModifierChangedInt", arity:3, eventType:OsirisEventType, callback:OsirisRulesetModifierChangedIntCallback):integer
+---@field RegisterListener fun(id:"RulesetModifierChangedString", arity:3, eventType:OsirisEventType, callback:OsirisRulesetModifierChangedStringCallback):integer
+---@field RegisterListener fun(id:"SafeRomanceOptionChanged", arity:2, eventType:OsirisEventType, callback:OsirisSafeRomanceOptionChangedCallback):integer
+---@field RegisterListener fun(id:"SavegameLoadStarted", arity:0, eventType:OsirisEventType, callback:OsirisSavegameLoadStartedCallback):integer
+---@field RegisterListener fun(id:"SavegameLoaded", arity:0, eventType:OsirisEventType, callback:OsirisSavegameLoadedCallback):integer
+---@field RegisterListener fun(id:"Saw", arity:3, eventType:OsirisEventType, callback:OsirisSawCallback):integer
+---@field RegisterListener fun(id:"ScatteredAt", arity:4, eventType:OsirisEventType, callback:OsirisScatteredAtCallback):integer
+---@field RegisterListener fun(id:"ScreenFadeCleared", arity:2, eventType:OsirisEventType, callback:OsirisScreenFadeClearedCallback):integer
+---@field RegisterListener fun(id:"ScreenFadeDone", arity:2, eventType:OsirisEventType, callback:OsirisScreenFadeDoneCallback):integer
+---@field RegisterListener fun(id:"ShapeshiftChanged", arity:4, eventType:OsirisEventType, callback:OsirisShapeshiftChangedCallback):integer
+---@field RegisterListener fun(id:"ShapeshiftedHitpointsChanged", arity:2, eventType:OsirisEventType, callback:OsirisShapeshiftedHitpointsChangedCallback):integer
+---@field RegisterListener fun(id:"ShareInitiative", arity:1, eventType:OsirisEventType, callback:OsirisShareInitiativeCallback):integer
+---@field RegisterListener fun(id:"ShortRestCapable", arity:2, eventType:OsirisEventType, callback:OsirisShortRestCapableCallback):integer
+---@field RegisterListener fun(id:"ShortRestProcessing", arity:1, eventType:OsirisEventType, callback:OsirisShortRestProcessingCallback):integer
+---@field RegisterListener fun(id:"ShortRested", arity:1, eventType:OsirisEventType, callback:OsirisShortRestedCallback):integer
+---@field RegisterListener fun(id:"StackedWith", arity:2, eventType:OsirisEventType, callback:OsirisStackedWithCallback):integer
+---@field RegisterListener fun(id:"StartAttack", arity:4, eventType:OsirisEventType, callback:OsirisStartAttackCallback):integer
+---@field RegisterListener fun(id:"StartAttackPosition", arity:6, eventType:OsirisEventType, callback:OsirisStartAttackPositionCallback):integer
+---@field RegisterListener fun(id:"StartedDisarmingTrap", arity:2, eventType:OsirisEventType, callback:OsirisStartedDisarmingTrapCallback):integer
+---@field RegisterListener fun(id:"StartedFleeing", arity:1, eventType:OsirisEventType, callback:OsirisStartedFleeingCallback):integer
+---@field RegisterListener fun(id:"StartedLockpicking", arity:2, eventType:OsirisEventType, callback:OsirisStartedLockpickingCallback):integer
+---@field RegisterListener fun(id:"StartedPreviewingSpell", arity:4, eventType:OsirisEventType, callback:OsirisStartedPreviewingSpellCallback):integer
+---@field RegisterListener fun(id:"StatusApplied", arity:4, eventType:OsirisEventType, callback:OsirisStatusAppliedCallback):integer
+---@field RegisterListener fun(id:"StatusAttempt", arity:4, eventType:OsirisEventType, callback:OsirisStatusAttemptCallback):integer
+---@field RegisterListener fun(id:"StatusAttemptFailed", arity:4, eventType:OsirisEventType, callback:OsirisStatusAttemptFailedCallback):integer
+---@field RegisterListener fun(id:"StatusRemoved", arity:4, eventType:OsirisEventType, callback:OsirisStatusRemovedCallback):integer
+---@field RegisterListener fun(id:"StatusTagCleared", arity:5, eventType:OsirisEventType, callback:OsirisStatusTagClearedCallback):integer
+---@field RegisterListener fun(id:"StatusTagSet", arity:5, eventType:OsirisEventType, callback:OsirisStatusTagSetCallback):integer
+---@field RegisterListener fun(id:"StoppedCombining", arity:6, eventType:OsirisEventType, callback:OsirisStoppedCombiningCallback):integer
+---@field RegisterListener fun(id:"StoppedDisarmingTrap", arity:2, eventType:OsirisEventType, callback:OsirisStoppedDisarmingTrapCallback):integer
+---@field RegisterListener fun(id:"StoppedLockpicking", arity:2, eventType:OsirisEventType, callback:OsirisStoppedLockpickingCallback):integer
+---@field RegisterListener fun(id:"StoppedSneaking", arity:1, eventType:OsirisEventType, callback:OsirisStoppedSneakingCallback):integer
+---@field RegisterListener fun(id:"SubQuestUpdateUnlocked", arity:3, eventType:OsirisEventType, callback:OsirisSubQuestUpdateUnlockedCallback):integer
+---@field RegisterListener fun(id:"SupplyTemplateSpent", arity:2, eventType:OsirisEventType, callback:OsirisSupplyTemplateSpentCallback):integer
+---@field RegisterListener fun(id:"SwarmAIGroupJoined", arity:2, eventType:OsirisEventType, callback:OsirisSwarmAIGroupJoinedCallback):integer
+---@field RegisterListener fun(id:"SwarmAIGroupLeft", arity:2, eventType:OsirisEventType, callback:OsirisSwarmAIGroupLeftCallback):integer
+---@field RegisterListener fun(id:"SwitchedCombat", arity:3, eventType:OsirisEventType, callback:OsirisSwitchedCombatCallback):integer
+---@field RegisterListener fun(id:"TadpolePowerAssigned", arity:2, eventType:OsirisEventType, callback:OsirisTadpolePowerAssignedCallback):integer
+---@field RegisterListener fun(id:"TagCleared", arity:2, eventType:OsirisEventType, callback:OsirisTagClearedCallback):integer
+---@field RegisterListener fun(id:"TagEvent", arity:2, eventType:OsirisEventType, callback:OsirisTagEventCallback):integer
+---@field RegisterListener fun(id:"TagSet", arity:2, eventType:OsirisEventType, callback:OsirisTagSetCallback):integer
+---@field RegisterListener fun(id:"TeleportToFleeWaypoint", arity:2, eventType:OsirisEventType, callback:OsirisTeleportToFleeWaypointCallback):integer
+---@field RegisterListener fun(id:"TeleportToFromCamp", arity:1, eventType:OsirisEventType, callback:OsirisTeleportToFromCampCallback):integer
+---@field RegisterListener fun(id:"TeleportToWaypoint", arity:2, eventType:OsirisEventType, callback:OsirisTeleportToWaypointCallback):integer
+---@field RegisterListener fun(id:"Teleported", arity:9, eventType:OsirisEventType, callback:OsirisTeleportedCallback):integer
+---@field RegisterListener fun(id:"TeleportedFromCamp", arity:1, eventType:OsirisEventType, callback:OsirisTeleportedFromCampCallback):integer
+---@field RegisterListener fun(id:"TeleportedToCamp", arity:1, eventType:OsirisEventType, callback:OsirisTeleportedToCampCallback):integer
+---@field RegisterListener fun(id:"TemplateAddedTo", arity:4, eventType:OsirisEventType, callback:OsirisTemplateAddedToCallback):integer
+---@field RegisterListener fun(id:"TemplateDestroyedBy", arity:5, eventType:OsirisEventType, callback:OsirisTemplateDestroyedByCallback):integer
+---@field RegisterListener fun(id:"TemplateEnteredTrigger", arity:5, eventType:OsirisEventType, callback:OsirisTemplateEnteredTriggerCallback):integer
+---@field RegisterListener fun(id:"TemplateEquipped", arity:2, eventType:OsirisEventType, callback:OsirisTemplateEquippedCallback):integer
+---@field RegisterListener fun(id:"TemplateKilledBy", arity:5, eventType:OsirisEventType, callback:OsirisTemplateKilledByCallback):integer
+---@field RegisterListener fun(id:"TemplateLeftTrigger", arity:5, eventType:OsirisEventType, callback:OsirisTemplateLeftTriggerCallback):integer
+---@field RegisterListener fun(id:"TemplateOpening", arity:3, eventType:OsirisEventType, callback:OsirisTemplateOpeningCallback):integer
+---@field RegisterListener fun(id:"TemplateRemovedFrom", arity:3, eventType:OsirisEventType, callback:OsirisTemplateRemovedFromCallback):integer
+---@field RegisterListener fun(id:"TemplateUnequipped", arity:2, eventType:OsirisEventType, callback:OsirisTemplateUnequippedCallback):integer
+---@field RegisterListener fun(id:"TemplateUseFinished", arity:4, eventType:OsirisEventType, callback:OsirisTemplateUseFinishedCallback):integer
+---@field RegisterListener fun(id:"TemplateUseStarted", arity:3, eventType:OsirisEventType, callback:OsirisTemplateUseStartedCallback):integer
+---@field RegisterListener fun(id:"TemplatesCombined", arity:7, eventType:OsirisEventType, callback:OsirisTemplatesCombinedCallback):integer
+---@field RegisterListener fun(id:"TemporaryHostileRelationRemoved", arity:3, eventType:OsirisEventType, callback:OsirisTemporaryHostileRelationRemovedCallback):integer
+---@field RegisterListener fun(id:"TemporaryHostileRelationRequestHandled", arity:3, eventType:OsirisEventType, callback:OsirisTemporaryHostileRelationRequestHandledCallback):integer
+---@field RegisterListener fun(id:"TextEvent", arity:1, eventType:OsirisEventType, callback:OsirisTextEventCallback):integer
+---@field RegisterListener fun(id:"TimelineScreenFadeStarted", arity:3, eventType:OsirisEventType, callback:OsirisTimelineScreenFadeStartedCallback):integer
+---@field RegisterListener fun(id:"TimerFinished", arity:1, eventType:OsirisEventType, callback:OsirisTimerFinishedCallback):integer
+---@field RegisterListener fun(id:"TradeEnds", arity:2, eventType:OsirisEventType, callback:OsirisTradeEndsCallback):integer
+---@field RegisterListener fun(id:"TradeGenerationEnded", arity:1, eventType:OsirisEventType, callback:OsirisTradeGenerationEndedCallback):integer
+---@field RegisterListener fun(id:"TradeGenerationStarted", arity:1, eventType:OsirisEventType, callback:OsirisTradeGenerationStartedCallback):integer
+---@field RegisterListener fun(id:"TurnEnded", arity:1, eventType:OsirisEventType, callback:OsirisTurnEndedCallback):integer
+---@field RegisterListener fun(id:"TurnStarted", arity:1, eventType:OsirisEventType, callback:OsirisTurnStartedCallback):integer
+---@field RegisterListener fun(id:"TutorialBoxClosed", arity:2, eventType:OsirisEventType, callback:OsirisTutorialBoxClosedCallback):integer
+---@field RegisterListener fun(id:"TutorialClosed", arity:2, eventType:OsirisEventType, callback:OsirisTutorialClosedCallback):integer
+---@field RegisterListener fun(id:"TutorialEvent", arity:2, eventType:OsirisEventType, callback:OsirisTutorialEventCallback):integer
+---@field RegisterListener fun(id:"UnequipFailed", arity:2, eventType:OsirisEventType, callback:OsirisUnequipFailedCallback):integer
+---@field RegisterListener fun(id:"Unequipped", arity:2, eventType:OsirisEventType, callback:OsirisUnequippedCallback):integer
+---@field RegisterListener fun(id:"Unlocked", arity:3, eventType:OsirisEventType, callback:OsirisUnlockedCallback):integer
+---@field RegisterListener fun(id:"UnlockedRecipe", arity:2, eventType:OsirisEventType, callback:OsirisUnlockedRecipeCallback):integer
+---@field RegisterListener fun(id:"UseFinished", arity:3, eventType:OsirisEventType, callback:OsirisUseFinishedCallback):integer
+---@field RegisterListener fun(id:"UseStarted", arity:2, eventType:OsirisEventType, callback:OsirisUseStartedCallback):integer
+---@field RegisterListener fun(id:"UserAvatarCreated", arity:3, eventType:OsirisEventType, callback:OsirisUserAvatarCreatedCallback):integer
+---@field RegisterListener fun(id:"UserCampChestChanged", arity:2, eventType:OsirisEventType, callback:OsirisUserCampChestChangedCallback):integer
+---@field RegisterListener fun(id:"UserCharacterLongRested", arity:2, eventType:OsirisEventType, callback:OsirisUserCharacterLongRestedCallback):integer
+---@field RegisterListener fun(id:"UserConnected", arity:3, eventType:OsirisEventType, callback:OsirisUserConnectedCallback):integer
+---@field RegisterListener fun(id:"UserDisconnected", arity:3, eventType:OsirisEventType, callback:OsirisUserDisconnectedCallback):integer
+---@field RegisterListener fun(id:"UserEvent", arity:2, eventType:OsirisEventType, callback:OsirisUserEventCallback):integer
+---@field RegisterListener fun(id:"UserMakeWar", arity:3, eventType:OsirisEventType, callback:OsirisUserMakeWarCallback):integer
+---@field RegisterListener fun(id:"UsingSpell", arity:5, eventType:OsirisEventType, callback:OsirisUsingSpellCallback):integer
+---@field RegisterListener fun(id:"UsingSpellAtPosition", arity:8, eventType:OsirisEventType, callback:OsirisUsingSpellAtPositionCallback):integer
+---@field RegisterListener fun(id:"UsingSpellInTrigger", arity:6, eventType:OsirisEventType, callback:OsirisUsingSpellInTriggerCallback):integer
+---@field RegisterListener fun(id:"UsingSpellOnTarget", arity:6, eventType:OsirisEventType, callback:OsirisUsingSpellOnTargetCallback):integer
+---@field RegisterListener fun(id:"UsingSpellOnZoneWithTarget", arity:6, eventType:OsirisEventType, callback:OsirisUsingSpellOnZoneWithTargetCallback):integer
+---@field RegisterListener fun(id:"VoiceBarkEnded", arity:2, eventType:OsirisEventType, callback:OsirisVoiceBarkEndedCallback):integer
+---@field RegisterListener fun(id:"VoiceBarkFailed", arity:1, eventType:OsirisEventType, callback:OsirisVoiceBarkFailedCallback):integer
+---@field RegisterListener fun(id:"VoiceBarkStarted", arity:2, eventType:OsirisEventType, callback:OsirisVoiceBarkStartedCallback):integer
+---@field RegisterListener fun(id:"WentOnStage", arity:2, eventType:OsirisEventType, callback:OsirisWentOnStageCallback):integer
+Ext.Osiris = {}
