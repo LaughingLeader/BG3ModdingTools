@@ -67,3 +67,8 @@ The scripts will check for specific environment variables, which will allow you 
 4. Under "User Variables for Username", click "New" to add a variable, then enter the name and path as specified in the table above.
 
 **You may need to restart the command prompt, or enter the `refreshEnv` command (if you have chocolatey) to refresh all environment variables, so python will see them.**
+
+# Links
+
+* [Leader's Lair Discord](https://discord.gg/j5gp6MD)
+* [BG3 Modding Community Discord](https://discord.gg/bg3mods)
