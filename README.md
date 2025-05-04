@@ -1,5 +1,13 @@
 # Baldur's Gate 3 Modding Tools  
 
+# Support
+
+If you're feeling generous, an easy way to show support is by tipping me a coffee:
+
+[![Tip Me a Coffee](https://i.imgur.com/NkmwXff.png)](https://ko-fi.com/LaughingLeader)
+
+All coffee goes toward fueling future and current development efforts. Thanks!
+
 ## Installation  
 
 Either clone this repository, or download it as a zip with the green Code button (click Code -> Download as Zip).
