@@ -8,9 +8,13 @@ Either clone this repository, or download it as a zip with the green Code button
 
 ## Baldur's Gate 3 Scripting References  
 
-You can find maintained copies of the "Osiris in Lua" scripts in the [generated](https://github.com/LaughingLeader/BG3ModdingTools/tree/master/generated) folder. These are generated using the latest `story_header.div`, and provide auto-completion for the Osiris scripting language functions from a [Script Extender](https://github.com/Norbyte/bg3se) script (tutorial here for setting up SE scripts: [Script Extender Lua Setup](https://github.com/LaughingLeader/BG3ModdingTools/wiki/Script-Extender-Lua-Setup)). 
+You can find maintained copies of the "Osiris in Lua" scripts in the [generated](https://github.com/LaughingLeader/BG3ModdingTools/tree/master/generated) folder. These are generated using the latest `story_header.div`, and provide auto-completion for the Osiris scripting language functions from a [Script Extender](https://github.com/Norbyte/bg3se) script.
 
 tl;dr, these are references meant for mod developers, to make scripting easier. They shouldn't be added to a mod directly, but rather included as an external reference in an lua extension.
+
+There's a tutorial in the wiki section for setting up SE scripts: 
+
+[Script Extender Lua Setup](https://github.com/LaughingLeader/BG3ModdingTools/wiki/Script-Extender-Lua-Setup)
 
 ### [Osi.lua](https://github.com/LaughingLeader/BG3ModdingTools/blob/master/generated/Osi.lua)  
 
