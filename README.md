@@ -6,6 +6,24 @@ Either clone this repository, or download it as a zip with the green Code button
 
 [Refer to the python script installation section for more information.](#installation-1)
 
+## Baldur's Gate 3 Scripting References  
+
+You can find maintained copies of the "Osiris in Lua" scripts in the [generated](https://github.com/LaughingLeader/BG3ModdingTools/tree/master/generated) folder. These are generated using the latest `story_header.div`, and provide auto-completion for the Osiris scripting language functions from a [Script Extender](https://github.com/Norbyte/bg3se) script (tutorial here for setting up SE scripts: [Script Extender Lua Setup](https://github.com/LaughingLeader/BG3ModdingTools/wiki/Script-Extender-Lua-Setup)). 
+
+tl;dr, these are references meant for mod developers, to make scripting easier. They shouldn't be added to a mod directly, but rather included as an external reference in an lua extension.
+
+### [Osi.lua](https://github.com/LaughingLeader/BG3ModdingTools/blob/master/generated/Osi.lua)  
+
+This reference provides auto-completion for all the story header functions in `Osi`, including the proc-overrides that allow for less arguments (those are defined in Osiris scripts, instead of the game exe).
+
+### [Osi.Events.lua](https://github.com/LaughingLeader/BG3ModdingTools/blob/master/generated/Osi.Events.lua)  
+
+Events can be invoked when using them like a function, and this reference provides auto-completion for them (also in the `Osi` table). These are split off from `Osi.lua` since invoking events like functions isn't a typical usage case.
+
+### [Ext.Osiris.RegisterListener.lua](https://github.com/LaughingLeader/BG3ModdingTools/blob/master/generated/Ext.Osiris.RegisterListener.lua)  
+
+This reference provides auto-completion for `Ext.Osiris.RegisterListener`.
+
 ## Snippets  
 
 Inside the .vscode folder is a file named `BaldursGate3.code-snippets`.  
