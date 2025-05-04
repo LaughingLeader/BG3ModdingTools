@@ -62,9 +62,9 @@ The scripts will check for specific environment variables, which will allow you 
 #### How to set Environment Variables  
 
 1. Hit the Windows Key.
-2. Type "environment", then click "Edit the system environment variables" in the search window.
+2. Type "environment", then click "Edit environment variables for your account" option in the search window.
 3. Click the "Environment Variables" button in the window that popped up.
-4. Under "User Variables for Username", click "New" to add a variable, then enter the name and path as specified in the table above.
+4. Under "User Variables for Username" section, click "New" to add a variable, then enter the name and path as specified in the table above.
 
 **You may need to restart the command prompt, or enter the `refreshEnv` command (if you have chocolatey) to refresh all environment variables, so python will see them.**
 
