@@ -1,5 +1,11 @@
+# pyright: reportUnknownVariableType=false, reportUnknownArgumentType=false
+# pyright: reportUnknownMemberType=false, reportUnknownParameterType=false
+# pyright: reportMissingImports=false
+# pyright: reportAny=false
+
 from dataclasses import dataclass, field
 from io import BufferedReader
+from typing import Literal
 from PIL import Image
 import numpy
 import lxml.etree as ET
@@ -21,9 +27,9 @@ class Icon:
     u2:float = 0
     v1:float = 0
     v2:float = 0
-    rect:tuple[4] = field(default_factory=lambda:(0,0,0,0))
+    rect:tuple[Literal[0], Literal[0], Literal[0], Literal[0]] = field(default_factory=lambda:(0,0,0,0))
     
-    def update_rect(self, atlas:"Atlas")->tuple[4]:
+    def update_rect(self, atlas:"Atlas"):
         self.rect = (
             numpy.floor(atlas.tex_width * (self.u1)), 
             numpy.floor(atlas.tex_height * (self.v1)), 
@@ -67,7 +73,7 @@ class Atlas:
                                 atlas.icon_width = int(value)
                             elif id == "Width":
                                 atlas.icon_height = int(value)
-                    case "TextureAtlasPath":       
+                    case "TextureAtlasPath":
                         for id,value in [(x.get("id"), x.get("value")) for x in elem.iterdescendants()]:
                             if id == "Path":
                                 self.texture_path = value
@@ -91,7 +97,7 @@ class Atlas:
                             icon.update_rect(self)
                             self.icons.append(icon)
 
-default_output_path = Path(script_dir.joinpath("output\\icons\\"))
+default_output_path = script_dir.joinpath("output\\icons\\")
 
 parser = argparse.ArgumentParser()
 parser.add_argument("-d", "--data", type=Path, required=True, help="The path to a root Public/ModName directory with icon atlas and texture files.")
@@ -125,7 +131,7 @@ for atlas_path in atlas_files:
         #output_dir.mkdir(parents=True, exist_ok=True)
         
         if atlas.texture_path == "":
-            print(f"No texture path set for atlas\n{atlas}")
+            print(f"No texture path set for atlas:\n{atlas}")
             continue
 
         texture_path = data_dir.joinpath(atlas.texture_path)
