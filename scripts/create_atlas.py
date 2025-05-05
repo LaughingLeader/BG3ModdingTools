@@ -37,16 +37,16 @@ atlas_template = """<?xml version="1.0" encoding="UTF-8" ?>
         <node id="root">
             <children>
                 <node id="TextureAtlasIconSize">
-                    <attribute id="Height" value="{icon_w}" type="int32" />
-                    <attribute id="Width" value="{icon_h}" type="int32" />
+                    <attribute id="Height" type="int32" value="{icon_w}" />
+                    <attribute id="Width" type="int32" value="{icon_h}" />
                 </node>
                 <node id="TextureAtlasPath">
-                    <attribute id="Path" value="{texture_path}" type="string" />
-                    <attribute id="UUID" value="{texture_uuid}" type="FixedString" />
+                    <attribute id="Path" type="string" value="{texture_path}" />
+                    <attribute id="UUID" type="FixedString" value="{texture_uuid}" />
                 </node>
                 <node id="TextureAtlasTextureSize">
-                    <attribute id="Height" value="{texture_width}" type="int32" />
-                    <attribute id="Width" value="{texture_height}" type="int32" />
+                    <attribute id="Height" type="int32" value="{texture_width}" />
+                    <attribute id="Width" type="int32" value="{texture_height}" />
                 </node>
             </children>
         </node>
@@ -79,10 +79,10 @@ class Icon():
         return """
                 <node id="IconUV">
                     <attribute id="MapKey" value="{name}" type="FixedString" />
-                    <attribute id="U1" value="{u1}" type="float" />
-                    <attribute id="U2" value="{u2}" type="float" />
-                    <attribute id="V1" value="{v1}" type="float" />
-                    <attribute id="V2" value="{v2}" type="float" />
+                    <attribute id="U1" type="float" value="{u1}" />
+                    <attribute id="U2" type="float" value="{u2}" />
+                    <attribute id="V1" type="float" value="{v1}" />
+                    <attribute id="V2" type="float" value="{v2}" />
                 </node>""".format(
                     name = self.name,
                     u1 = self.uv.u1,
@@ -185,26 +185,22 @@ def get_icons(icons_dir:Path, icon_size:tuple[int,int], texture_size:tuple[int,i
     icons_first = []
     images = get_images(icons_dir)
     for img in images:
-        # u1 = truncate(float(((icon_size * x) / texture_size) + padding), 9)
-        # v1 = truncate(float(((icon_size * y) / texture_size) + padding), 9)
-        # u2 = truncate(float(((icon_size * (x + 1)) / texture_size) - padding), 9)
-        # v2 = truncate(float(((icon_size * (y + 1)) / texture_size) - padding), 9)
-        round_num = True
-        truncate_u1 = 7
-        truncate_v1 = 8
-        truncate_u2 = 7
-        truncate_v2 = 7
+        round_num = False
+        truncate_u1 = 8
+        truncate_u2 = 8
+        truncate_v1 = 11
+        truncate_v2 = 9
 
-        if x <= 1 and y == 0: 
-            u1 = truncate(numpy.clip(float(((icon_size[0] * x) / texture_size[0]) + padding[0]), 0, 1.0), 9, round_num=True)
-            v1 = truncate(numpy.clip(float(((icon_size[1] * y) / texture_size[0]) + padding[0]), 0, 1.0), 9, round_num=False)
-            u2 = truncate(numpy.clip(float(((icon_size[0] * (x + 1)) / texture_size[1]) - padding[1]), 0, 1.0), 7, round_num=False)
-            v2 = truncate(numpy.clip(float(((icon_size[1] * (y + 1)) / texture_size[1]) - padding[1]), 0, 1.0), 7, round_num=False)
-        else:
-            u1 = truncate(numpy.clip(float(((icon_size[0] * x) / texture_size[0]) + padding[0]), 0, 1.0), truncate_u1, round_num)
-            v1 = truncate(numpy.clip(float(((icon_size[1] * y) / texture_size[0]) + padding[0]), 0, 1.0), truncate_v1, round_num)
-            u2 = truncate(numpy.clip(float(((icon_size[0] * (x + 1)) / texture_size[1]) - padding[1]), 0, 1.0), truncate_u2, round_num)
-            v2 = truncate(numpy.clip(float(((icon_size[1] * (y + 1)) / texture_size[1]) - padding[1]), 0, 1.0), truncate_v2, round_num)
+        # if x <= 1 and y == 0: 
+        #     u1 = truncate(numpy.clip(float(((icon_size[0] * x) / texture_size[0]) + padding[0]), 0, 1.0), 9, round_num=True)
+        #     u2 = truncate(numpy.clip(float(((icon_size[0] * (x + 1)) / texture_size[1]) - padding[1]), 0, 1.0), 8, round_num=False)
+        #     v1 = truncate(numpy.clip(float(((icon_size[1] * y) / texture_size[0]) + padding[0]), 0, 1.0), 12, round_num=False)
+        #     v2 = truncate(numpy.clip(float(((icon_size[1] * (y + 1)) / texture_size[1]) - padding[1]), 0, 1.0), 9, round_num=False)
+        # else:
+        u1 = truncate(numpy.clip(float(((icon_size[0] * x) / texture_size[0]) + padding[0]), 0, 1.0), truncate_u1, round_num)
+        u2 = truncate(numpy.clip(float(((icon_size[0] * (x + 1)) / texture_size[1]) - padding[1]), 0, 1.0), truncate_u2, round_num)
+        v1 = truncate(numpy.clip(float(((icon_size[1] * y) / texture_size[0]) + padding[0]), 0, 1.0), truncate_v1, round_num)
+        v2 = truncate(numpy.clip(float(((icon_size[1] * (y + 1)) / texture_size[1]) - padding[1]), 0, 1.0), truncate_v2, round_num)
 
         icon = Icon(img.resolve(), (x * icon_size[0], y * icon_size[1]), UV(u1, v1, u2, v2))
 
