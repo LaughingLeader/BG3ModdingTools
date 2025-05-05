@@ -1,10 +1,40 @@
 # Baldur's Gate 3 Modding Tools  
 
+# Support
+
+If you're feeling generous, an easy way to show support is by tipping me a coffee:
+
+[![Tip Me a Coffee](https://i.imgur.com/NkmwXff.png)](https://ko-fi.com/LaughingLeader)
+
+All coffee goes toward fueling future and current development efforts. Thanks!
+
 ## Installation  
 
 Either clone this repository, or download it as a zip with the green Code button (click Code -> Download as Zip).
 
 [Refer to the python script installation section for more information.](#installation-1)
+
+## Baldur's Gate 3 Scripting References  
+
+You can find maintained copies of the "Osiris in Lua" scripts in the [generated](https://github.com/LaughingLeader/BG3ModdingTools/tree/master/generated) folder. These are generated using the latest `story_header.div`, and provide auto-completion for the Osiris scripting language functions from a [Script Extender](https://github.com/Norbyte/bg3se) script.
+
+tl;dr, these are references meant for mod developers, to make scripting easier. They shouldn't be added to a mod directly, but rather included as an external reference in an lua extension.
+
+There's a tutorial in the wiki section for setting up SE scripts: 
+
+[Script Extender Lua Setup](https://github.com/LaughingLeader/BG3ModdingTools/wiki/Script-Extender-Lua-Setup)
+
+### [Osi.lua](https://github.com/LaughingLeader/BG3ModdingTools/blob/master/generated/Osi.lua)  
+
+This reference provides auto-completion for all the story header functions in `Osi`, including the proc-overrides that allow for less arguments (those are defined in Osiris scripts, instead of the game exe).
+
+### [Osi.Events.lua](https://github.com/LaughingLeader/BG3ModdingTools/blob/master/generated/Osi.Events.lua)  
+
+Events can be invoked when using them like a function, and this reference provides auto-completion for them (also in the `Osi` table). These are split off from `Osi.lua` since invoking events like functions isn't a typical usage case.
+
+### [Ext.Osiris.RegisterListener.lua](https://github.com/LaughingLeader/BG3ModdingTools/blob/master/generated/Ext.Osiris.RegisterListener.lua)  
+
+This reference provides auto-completion for `Ext.Osiris.RegisterListener`.
 
 ## Snippets  
 
@@ -62,8 +92,13 @@ The scripts will check for specific environment variables, which will allow you 
 #### How to set Environment Variables  
 
 1. Hit the Windows Key.
-2. Type "environment", then click "Edit the system environment variables" in the search window.
+2. Type "environment", then click "Edit environment variables for your account" option in the search window.
 3. Click the "Environment Variables" button in the window that popped up.
-4. Under "User Variables for Username", click "New" to add a variable, then enter the name and path as specified in the table above.
+4. Under "User Variables for Username" section, click "New" to add a variable, then enter the name and path as specified in the table above.
 
 **You may need to restart the command prompt, or enter the `refreshEnv` command (if you have chocolatey) to refresh all environment variables, so python will see them.**
+
+# Links
+
+* [Leader's Lair Discord](https://discord.gg/j5gp6MD)
+* [BG3 Modding Community Discord](https://discord.gg/bg3mods)
