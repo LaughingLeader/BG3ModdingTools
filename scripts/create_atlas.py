@@ -1,9 +1,16 @@
+# pyright: reportUnknownVariableType=false, reportUnknownArgumentType=false
+# pyright: reportUnknownMemberType=false, reportUnknownParameterType=false
+# pyright: reportMissingImports=false
+# pyright: reportAny=false
+
 import os
 import subprocess
 from dataclasses import dataclass
 from pathlib import Path
 import argparse
 import timeit
+from collections.abc import Sequence
+import uuid
 
 # External
 from PIL import Image
@@ -57,9 +64,9 @@ class UV():
 @dataclass
 class Icon():
     image_path:Path
-    pos:tuple[float,float]
+    pos:Sequence[int]
     uv:UV
-    image:Image.Image = None
+    image:Image.Image|None = None
     
     @property
     def name(self):
@@ -124,7 +131,7 @@ texture_resource_template = """<?xml version="1.0" encoding="utf-8"?>
 	</region>
 </save>"""
 
-def generate_texture_lsf(uuid:str, dds_path:Path, resource_path:Path, lslib_path:Path, resource_lsx_output:Path = None):
+def generate_texture_lsf(uuid:str, dds_path:Path, resource_path:Path, lslib_path:Path, resource_lsx_output:Path|None = None):
     if not common.import_lslib(lslib_path):
         print(f"Path to lslib is invalid: {lslib_path}")
         return False
@@ -222,9 +229,10 @@ def generate_texture(icons:list[Icon], texture_output:Path, texture_size:tuple[i
     texture_image = Image.new('RGBA', texture_size, (0, 0, 0, 0))
     common.log(script_name, f"Merging {len(icons)} images.")
     for icon in icons:
-        common.log(script_name, f"** Pasting '{icon.name}'.", False)
-        #texture_image.paste(icon.image, icon.pos, mask=0)
-        texture_image.alpha_composite(icon.image, icon.pos)
+        if icon.image != None:
+            common.log(script_name, f"** Pasting '{icon.name}'.", False)
+            #texture_image.paste(icon.image, icon.pos, mask=0)
+            texture_image.alpha_composite(icon.image, icon.pos)
 
     common.log(script_name, f"Saving temp png texture to '{temp_texture_png}'.")
     texture_image.save(temp_texture_png)
@@ -245,9 +253,9 @@ def generate_texture(icons:list[Icon], texture_output:Path, texture_size:tuple[i
         send2trash.send2trash(str(temp_texture_png.absolute()).replace("/", "\\"))
         return True
 
-def generate_atlas_lsx(icons:list[Icon], atlas_output:Path, texture_output:Path, atlas_uuid:str, icon_size:tuple[int,int], texture_size:tuple[int,int])->bool:
+def generate_atlas_lsx(icons:list[Icon], atlas_output:Path, texture_output:Path, atlas_uuid:str|None, icon_size:tuple[int,int], texture_size:tuple[int,int]):
     if atlas_uuid is None or atlas_uuid == "":
-        atlas_uuid = common.NewUUID()
+        atlas_uuid = str(uuid.uuid4())
 
     atlas_output = atlas_output.with_suffix(".lsx")
     texture_output = texture_output.with_suffix(".dds")
@@ -281,10 +289,12 @@ def generate_atlas_lsx(icons:list[Icon], atlas_output:Path, texture_output:Path,
     f.write(xml_str)
 
 if __name__ == "__main__":
+    default_atlas_path = script_dir.joinpath("output\\atlas\\Atlas.lsx")
+    default_texture_path = script_dir.joinpath("output\\atlas\\Texture.dds")
     parser = argparse.ArgumentParser(description='Create a texture atlas from a folder of icons.')
     parser.add_argument("-i", "--icons", type=Path, required=True, help='The directory of icons to process.')
-    parser.add_argument("-a", "--atlas", type=Path, required=True, help='The path of the atlas file to create, such as Public/ModName_UUID/GUI/MyAtlas.lsx.')
-    parser.add_argument("-t", "--texture", type=Path, required=True, help='The path of the texture to create.')
+    parser.add_argument("-a", "--atlas", type=Path, default=default_atlas_path, help='The path of the atlas file to create, such as Public/ModName_UUID/GUI/MyAtlas.lsx.')
+    parser.add_argument("-t", "--texture", type=Path, default=default_texture_path, help='The path of the texture to create.')
     parser.add_argument("-u", "--uuid", type=str, default="", help='The UUID to use for the atlas (defaults to a new UUID4).')
     parser.add_argument("-m", "--mipmaps", action='store_true', help='Generate mipmaps (default False).')
     parser.add_argument("-f", "--ddsformat", type=str, default="DXT5", help='The dds format to use (DXT1, DXT5 etc). Defaults to DXT5 (BC3_UNORM).')
@@ -311,6 +321,13 @@ if __name__ == "__main__":
         icon_size:tuple[int,int] = args.iconsize
         texture_size:tuple[int,int] = args.texturesize
         do_mipmaps:bool = args.mipmaps
+
+        if atlas_output == default_atlas_path:
+            atlas_output = default_atlas_path.parent.joinpath(icons_dir.name + ".lsx")
+
+        if texture_output == default_texture_path:
+            texture_output = default_texture_path.parent.joinpath(icons_dir.name + ".dds")
+
         icons = get_icons(icons_dir, icon_size, texture_size)
         global totalIcons
         totalIcons = len(icons)
