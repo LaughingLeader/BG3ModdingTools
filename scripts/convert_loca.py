@@ -23,7 +23,7 @@ parser.description = "Convert localization files (xml/loca)."
 new_line = "\n    "
 parser.usage = f"""
 Example usage:
-python convert_loca.py -d "C:\lslib\divine.exe" -f "MyMod.loca"
+python convert_loca.py -d "C:\\lslib\\divine.exe" -f "MyMod.loca"
 """
 
 args = parser.parse_args()

@@ -1,7 +1,13 @@
+# pyright: reportUnknownVariableType=false, reportUnknownArgumentType=false
+# pyright: reportUnknownMemberType=false, reportUnknownParameterType=false
+# pyright: reportMissingImports=false
+# pyright: reportAny=false
+
 import os
 from pathlib import Path
 import argparse
 import sys
+from typing import Any
 
 import common
 script_name = Path(__file__).stem
@@ -13,13 +19,13 @@ os.chdir(script_dir)
 default_output_path = Path(script_dir.joinpath("output\\lsf\\"))
 default_divine_path = common.get_lslib_path()
 
-def on_error(file, e):
+def on_error(file:Any, e:Any):
     log(f"Error converting file '{file}':\n{e}")
     
-def on_progress(status, numerator, denominator):
+def on_progress(status:Any, numerator:Any, denominator:Any):
     log(status)
 
-def run(lslib_dll:Path, file_arg:Path, output_file:Path = None, in_type:str = ".lsf", out_type:str = ".lsx"):
+def run(lslib_dll:Path, file_arg:str, output_file:Path|None = None, in_type:str = ".lsf", out_type:str = ".lsx"):
     print(lslib_dll)
     if lslib_dll.exists():
         import pythonnet
@@ -28,8 +34,8 @@ def run(lslib_dll:Path, file_arg:Path, output_file:Path = None, in_type:str = ".
         sys.path.append(str(lslib_dll.parent.absolute()))
         clr.AddReference("LSLib") # type: ignore 
 
-        from LSLib.LS import ResourceUtils, ResourceConversionParameters, ResourceLoadParameters # type: ignore 
-        from LSLib.LS.Enums import Game, ResourceFormat # type: ignore
+        from LSLib.LS import ResourceUtils, ResourceConversionParameters, ResourceLoadParameters
+        from LSLib.LS.Enums import Game
         
         load_params = ResourceLoadParameters.FromGameVersion(Game.BaldursGate3)
         conversion_params = ResourceConversionParameters.FromGameVersion(Game.BaldursGate3)
@@ -39,7 +45,7 @@ def run(lslib_dll:Path, file_arg:Path, output_file:Path = None, in_type:str = ".
         
         files:list[Path] = [Path(s) for s in file_arg.split(";")]
                 
-        def process_file(input:Path, output:Path = None):
+        def process_file(input:Path, output:Path|None = None):
             ext = input.suffix.lower()
             
             if output is None:
@@ -78,7 +84,7 @@ def run(lslib_dll:Path, file_arg:Path, output_file:Path = None, in_type:str = ".
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("-d", "--divine", type=Path, default=default_divine_path, help="The path to divine.exe.")
-    parser.add_argument("-o", "--output", type=Path, help="The output file path.")
+    parser.add_argument("-o", "--output", type=Path, help="The output file path. If not set, the output will just be the file name + .lsx")
     parser.add_argument("-f", "--file", type=str, required=True, help="A file, directory, or set of file paths (separated with ;) to convert.")
     parser.add_argument("--ext", type=str, default=".lsf", help="If -f is a directory, process only this input file type (defaults to .lsf).")
     parser.add_argument("--outputext", type=str, default=".lsx", help="If -f is a directory or set of files, make this the output file type  (defaults to .lsx).")
@@ -87,7 +93,7 @@ if __name__ == "__main__":
     new_line = "\n    "
     parser.usage = f"""
     Example usage:
-    python convert_lsf.py -d "C:\lslib\divine.exe" -f "SomeFile.lsf"
+    python convert_lsf.py -d "C:\\lslib\\divine.exe" -f "SomeFile.lsf"
     """
 
     args = parser.parse_args()
