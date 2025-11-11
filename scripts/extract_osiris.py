@@ -98,33 +98,35 @@ def run(target_file:Path, lslib_dll:Path, output_dir:Path = None, output_txt:boo
             name = data["signature"]["name"]
             raw_params = data["signature"]["params"]
             params = [type_dict.get(x) for x in raw_params] if raw_params is not None else []
+            out_param_bitmask = data["signature"]["out"]
+            if out_param_bitmask and raw_params is not None:
+                out_param_bitmask = int(out_param_bitmask)
+                out_params = []
+                params = []
+                for i in range(len(raw_params)):
+                    param_id = raw_params[i]
+                    out_param = get_query_param(name, i+1, param_id, out_param_bitmask)
+                    if out_param:
+                        out_params.append(out_param)
+                    else:
+                        params.append(type_dict.get(param_id))
+                entry = OsirisEntry(name, params, out_params)
+            else:
+                entry = OsirisEntry(name, params)
+            
             match entry_type:
                 case "Database":
-                    databases.append(OsirisEntry(name, params))
+                    databases.append(entry)
                 case "Event":
-                    events.append(OsirisEntry(name, params))
+                    events.append(entry)
                 case "Call":
-                    calls.append(OsirisEntry(name, params))
+                    calls.append(entry)
                 case "Query":
-                    out_param_bitmask = data["signature"]["out"]
-                    if out_param_bitmask and raw_params is not None:
-                        out_param_bitmask = int(out_param_bitmask)
-                        out_params = []
-                        params = []
-                        for i in range(len(raw_params)):
-                            param_id = raw_params[i]
-                            out_param = get_query_param(name, i+1, param_id, out_param_bitmask)
-                            if out_param:
-                                out_params.append(out_param)
-                            else:
-                                params.append(type_dict.get(param_id))
-                        queries.append(OsirisEntry(name, params, out_params))
-                    else:
-                        queries.append(OsirisEntry(name, params))
+                    queries.append(entry)
                 case "UserQuery":
-                    user_queries.append(OsirisEntry(name, params))
+                    user_queries.append(entry)
                 case "Proc":
-                    procs.append(OsirisEntry(name, params))
+                    procs.append(entry)
         
         def get_key(x): return x.name
         
@@ -166,8 +168,9 @@ def run(target_file:Path, lslib_dll:Path, output_dir:Path = None, output_txt:boo
     elif target_file.suffix == ".lsv":
         helper = SavegameHelpers(str(target_file))
         story = helper.LoadStory()
-        load_story(story)
+        result = load_story(story)
         helper.Dispose()
+        return result
     elif target_file.suffix == ".json":
         with target_file.open("r", encoding="utf-8") as f:
             result = parse_data(f.read())
