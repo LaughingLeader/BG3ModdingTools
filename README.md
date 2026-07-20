@@ -102,3 +102,4 @@ The scripts will check for specific environment variables, which will allow you 
 
 * [Leader's Lair Discord](https://discord.gg/j5gp6MD)
 * [BG3 Modding Community Discord](https://discord.gg/bg3mods)
+* [BG3 Hub](https://bg3hub.com/) — Baldur's Gate 3 tier lists, class builds, spell library, and Honour-Mode strategies.
